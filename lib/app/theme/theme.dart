@@ -10,6 +10,7 @@ Color blue = HexColor('#2f79f6');
 Color grey = HexColor('#656565');
 Color greyDark = HexColor('#1a1a1a');
 Color greyDark2 = HexColor('#1f2326');
+Color red = HexColor('#c04c4c');
 
 class NoteAppTheme {
   static ThemeData darkTheme = ThemeData(
@@ -32,6 +33,8 @@ class NoteAppTheme {
       backgroundColor: blue,
       foregroundColor: light,
     ),
+    bottomSheetTheme:
+        const BottomSheetThemeData(modalBackgroundColor: Colors.transparent),
     popupMenuTheme: PopupMenuThemeData(
       color: greyDark2,
       surfaceTintColor: Colors.transparent,
@@ -79,6 +82,11 @@ class NoteAppTheme {
         fontSize: 12.sp,
         fontWeight: FontWeight.normal,
       ),
+      titleMedium: TextStyle(
+        color: blue,
+        fontSize: 10.sp,
+        fontWeight: FontWeight.normal,
+      ),
     ),
   );
 
@@ -95,6 +103,8 @@ class NoteAppTheme {
         statusBarColor: light2,
       ),
     ),
+    bottomSheetTheme:
+        const BottomSheetThemeData(modalBackgroundColor: Colors.transparent),
     floatingActionButtonTheme: FloatingActionButtonThemeData(
       backgroundColor: blue,
       foregroundColor: light,
@@ -137,6 +147,16 @@ class NoteAppTheme {
         color: greyDark,
         fontSize: 12.sp,
         fontWeight: FontWeight.w500,
+      ),
+      titleLarge: TextStyle(
+        color: dark.withOpacity(0.7),
+        fontSize: 12.sp,
+        fontWeight: FontWeight.normal,
+      ),
+      titleMedium: TextStyle(
+        color: blue,
+        fontSize: 10.sp,
+        fontWeight: FontWeight.normal,
       ),
     ),
   );

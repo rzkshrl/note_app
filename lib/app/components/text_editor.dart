@@ -18,11 +18,6 @@ class TextEditor extends StatefulWidget {
 }
 
 class _TextEditorState extends State<TextEditor> {
-  Future<bool> _onWillPop() async {
-    await Navigator.of(context).pushReplacementNamed(homeViewRoute);
-    return true;
-  }
-
   String noteTitle = '';
   String noteText = '';
 
@@ -59,7 +54,7 @@ class _TextEditorState extends State<TextEditor> {
     if (noteTitle.isEmpty) {
       // go back/dismiss page without saving
       if (noteText.isEmpty) {
-        Navigator.pop(context);
+        Navigator.of(context).pushReplacementNamed(homeViewRoute);
       } else {
         String title = noteText.split('\n')[0];
         if (title.length > 16) {
@@ -68,22 +63,43 @@ class _TextEditorState extends State<TextEditor> {
         setState(() {
           noteTitle = title;
         });
+        try {
+          await SQLHelper().createItem(noteTitle, noteText);
+        } catch (e) {
+          SnackBarService.showSnackBar(
+            content: const Text("Can't save note."),
+          );
+          debugPrint('$e');
+        }
+        debugPrint(noteTitle);
       }
     }
-    try {
-      await SQLHelper().createItem(noteTitle, noteText);
-    } catch (e) {
-      SnackBarService.showSnackBar(
-        content: const Text("Can't save note."),
-      );
-      debugPrint('$e');
+  }
+
+  String extractDatefromTimeStamp() {
+    final currentDate = DateTime.now();
+    final formattedDate = DateFormat('MMM dd').format(currentDate);
+
+    if (currentDate.year == currentDate.year &&
+        currentDate.month == currentDate.month &&
+        currentDate.day == currentDate.day) {
+      return 'Today';
+    } else {
+      return formattedDate;
     }
+  }
+
+  Future<bool> _onWillPop() async {
+    handleBack();
+    await Navigator.of(context).pushReplacementNamed(homeViewRoute);
+
+    return true;
   }
 
   @override
   Widget build(BuildContext context) {
     // nanti bikin ini bisa sesuai languange hp yaa, jadi datetime format sesuai
-    final dateFormatter = DateFormat('d MMMM yyyy, HH:mm', 'id-ID');
+    final dateFormatter = DateFormat('hh:mm a');
     NavigationService service = NavigationService();
     return WillPopScope(
       onWillPop: _onWillPop,
@@ -100,7 +116,7 @@ class _TextEditorState extends State<TextEditor> {
                 children: [
                   IconButton(
                     onPressed: () {
-                      service.goBack();
+                      // service.goBack();
                       Navigator.of(context).pushReplacementNamed(homeViewRoute);
                     },
                     icon: const FaIcon(FontAwesomeIcons.arrowLeft),
@@ -116,7 +132,11 @@ class _TextEditorState extends State<TextEditor> {
                         icon: const FaIcon(FontAwesomeIcons.redoAlt),
                       ),
                       IconButton(
-                        onPressed: () {},
+                        onPressed: () {
+                          handleBack();
+                          Navigator.of(context)
+                              .pushReplacementNamed(homeViewRoute);
+                        },
                         icon: const FaIcon(FontAwesomeIcons.check),
                       ),
                     ],
@@ -157,7 +177,7 @@ class _TextEditorState extends State<TextEditor> {
                             Padding(
                               padding: EdgeInsets.only(bottom: 1.h),
                               child: Text(
-                                '${dateFormatter.format(DateTime.now())}',
+                                '${extractDatefromTimeStamp()}, ${dateFormatter.format(DateTime.now())}',
                                 style: Theme.of(context)
                                     .textTheme
                                     .displayMedium!

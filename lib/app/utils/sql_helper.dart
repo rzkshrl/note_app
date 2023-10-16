@@ -24,7 +24,7 @@ class SQLHelper {
 
   Future<int> createItem(String title, String text) async {
     final db = await SQLHelper().db();
-    final data = {constants.title: text, constants.text: text};
+    final data = {constants.title: title, constants.text: text};
     final id = await db.insert(constants.tableName, data,
         conflictAlgorithm: ConflictAlgorithm.replace);
     return id;
@@ -53,12 +53,18 @@ class SQLHelper {
   Future<void> deleteItem(int id) async {
     final db = await SQLHelper().db();
     try {
-      await db.delete("history", where: "id = ?", whereArgs: [id]);
+      await db.delete(constants.tableName, where: "id = ?", whereArgs: [id]);
     } catch (e) {
       SnackBarService.showSnackBar(
         content: const Text("Can't delete item."),
       );
       debugPrint('$e');
     }
+  }
+
+  Future<void> deleteAllItem() async {
+    final db = await SQLHelper().db();
+    await db.delete(constants.tableName);
+    await db.close();
   }
 }
