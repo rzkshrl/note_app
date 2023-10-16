@@ -1,0 +1,67 @@
+floatingActionButton: Padding(
+        padding: EdgeInsets.only(right: 3.w, bottom: 2.h),
+        child: AnimatedBuilder(
+            animation: cAniFAB2,
+            builder: (context, child) {
+              return ScaleTransition(
+                scale: Tween(begin: 1.2, end: 1.13).animate(cAniFAB2),
+                child: SizedBox(
+                  width: 10.w,
+                  child: InkWell(
+                    enableFeedback: false,
+                    highlightColor: Colors.transparent,
+                    splashColor: Colors.transparent,
+                    splashFactory: NoSplash.splashFactory,
+                    child: Container(
+                      height: 100,
+                      width: 100,
+                      decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Theme.of(context)
+                              .floatingActionButtonTheme
+                              .backgroundColor),
+                      child: GestureDetector(
+                        onTap: () async {
+                          handleButtonClickFAB();
+                          // navService.routeTo(textEditorViewRoute);
+                          Future.delayed(const Duration(milliseconds: 101))
+                              .then((value) => Navigator.of(context)
+                                  .pushReplacementNamed(textEditorViewRoute));
+                        },
+                        onLongPressStart: (details) {
+                          handleButtonClickFAB();
+                          cAniFAB.forward();
+                          cAniFAB2.forward();
+                        },
+                        onLongPressEnd: (details) async {
+                          await cAniFAB.reverse();
+                          await cAniFAB2.reverse();
+                          // navService.routeTo(textEditorViewRoute);
+                          await Navigator.of(context)
+                              .pushReplacementNamed(textEditorViewRoute);
+                        },
+                        child: AnimatedBuilder(
+                          animation: cAniFAB,
+                          builder: (context, child) {
+                            return ScaleTransition(
+                              scale:
+                                  Tween(begin: 1.05, end: 1.4).animate(cAniFAB),
+                              child: child,
+                            );
+                          },
+                          child: Padding(
+                            padding: EdgeInsets.only(left: 3.w, top: 4.45.h),
+                            child: FaIcon(FontAwesomeIcons.plus,
+                                size: 18,
+                                color: Theme.of(context)
+                                    .floatingActionButtonTheme
+                                    .foregroundColor),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            }),
+      ),
