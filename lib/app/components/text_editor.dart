@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:intl/intl.dart';
-import 'package:note_app/app/routes/navigation_service.dart';
+// import 'package:note_app/app/routes/navigation_service.dart';
 import 'package:note_app/app/routes/routing_constant.dart';
 import 'package:note_app/app/utils/sql_helper.dart';
 import 'package:sizer/sizer.dart';
@@ -100,7 +100,7 @@ class _TextEditorState extends State<TextEditor> {
   Widget build(BuildContext context) {
     // nanti bikin ini bisa sesuai languange hp yaa, jadi datetime format sesuai
     final dateFormatter = DateFormat('hh:mm a');
-    NavigationService service = NavigationService();
+    // NavigationService service = NavigationService();
     return WillPopScope(
       onWillPop: _onWillPop,
       child: Scaffold(

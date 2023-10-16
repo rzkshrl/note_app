@@ -28,25 +28,32 @@ Widget promptDeleteAllItems(BuildContext context, void Function()? onPressed) {
                     .copyWith(fontSize: 10.sp),
               ),
               const SizedBox(height: 8.0),
-              Row(
-                children: [
-                  Checkbox(
-                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    value: isDeleteEnabled,
-                    onChanged: (value) {
-                      setState(() {
-                        isDeleteEnabled = value;
-                      });
-                    },
-                  ),
-                  Text(
-                    "I've read and understand.",
-                    style: Theme.of(context)
-                        .textTheme
-                        .headlineMedium!
-                        .copyWith(fontSize: 10.sp),
-                  ),
-                ],
+              GestureDetector(
+                onTap: () {
+                  setState(() {
+                    isDeleteEnabled = !isDeleteEnabled!;
+                  });
+                },
+                child: Row(
+                  children: [
+                    Checkbox(
+                      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      value: isDeleteEnabled,
+                      onChanged: (value) {
+                        setState(() {
+                          isDeleteEnabled = value;
+                        });
+                      },
+                    ),
+                    Text(
+                      "I've read and understand.",
+                      style: Theme.of(context)
+                          .textTheme
+                          .headlineMedium!
+                          .copyWith(fontSize: 10.sp),
+                    ),
+                  ],
+                ),
               ),
               const SizedBox(height: 8.0),
               Row(
