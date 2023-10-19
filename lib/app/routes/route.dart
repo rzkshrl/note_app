@@ -10,8 +10,13 @@ class RouteGenerator {
     switch (settings.name) {
       case homeViewRoute:
         return MaterialPageRoute(builder: (context) => const Home());
-      case textEditorViewRoute:
-        return MaterialPageRoute(builder: (context) => const TextEditor());
+      case textEditorNewViewRoute:
+        return MaterialPageRoute(
+            builder: (context) => const TextEditor(args: ['new', {}]));
+      case textEditorUpdateViewRoute:
+        return MaterialPageRoute(
+            builder: (context) =>
+                TextEditor(args: ['update', settings.arguments]));
       default:
         return MaterialPageRoute(builder: (context) => const Home());
     }

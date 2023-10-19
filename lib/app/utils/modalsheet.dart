@@ -13,7 +13,7 @@ Widget promptDeleteAllItems(BuildContext context, void Function()? onPressed) {
         padding: EdgeInsets.only(top: 4.h, bottom: 2.h),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(32),
-          color: Theme.of(context).primaryColor,
+          color: Theme.of(context).canvasColor,
         ),
         child: Padding(
           padding: EdgeInsets.only(right: 6.w, left: 6.w),

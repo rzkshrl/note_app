@@ -5,13 +5,16 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:intl/intl.dart';
 // import 'package:note_app/app/routes/navigation_service.dart';
 import 'package:note_app/app/routes/routing_constant.dart';
+import 'package:note_app/app/utils/constants.dart';
 import 'package:note_app/app/utils/sql_helper.dart';
 import 'package:sizer/sizer.dart';
 
 import '../utils/snackbar.dart';
 
 class TextEditor extends StatefulWidget {
-  const TextEditor({super.key});
+  // ignore: prefer_typing_uninitialized_variables
+  final args;
+  const TextEditor({this.args, super.key});
 
   @override
   State<TextEditor> createState() => _TextEditorState();
@@ -20,6 +23,8 @@ class TextEditor extends StatefulWidget {
 class _TextEditorState extends State<TextEditor> {
   String noteTitle = '';
   String noteText = '';
+
+  var constants = Constants();
 
   var titleTextController = TextEditingController();
   var textTextController = TextEditingController();
@@ -39,8 +44,16 @@ class _TextEditorState extends State<TextEditor> {
   @override
   void initState() {
     super.initState();
+    noteTitle = (widget.args[0] == 'new' ? '' : widget.args[1][1]);
+    noteText = (widget.args[0] == 'new' ? '' : widget.args[1][2]);
+
+    titleTextController.text =
+        (widget.args[0] == 'new' ? '' : widget.args[1][1]);
+    textTextController.text =
+        (widget.args[0] == 'new' ? '' : widget.args[1][2]);
     titleTextController.addListener(handleTitleTextChange);
     textTextController.addListener(handleNoteTextChange);
+    debugPrint('TEST ARGUMENTASI DIMENSI : ${widget.args[0]}');
   }
 
   @override
@@ -63,15 +76,26 @@ class _TextEditorState extends State<TextEditor> {
         setState(() {
           noteTitle = title;
         });
-        try {
-          await SQLHelper().createItem(noteTitle, noteText);
-        } catch (e) {
-          SnackBarService.showSnackBar(
-            content: const Text("Can't save note."),
-          );
-          debugPrint('$e');
-        }
-        debugPrint(noteTitle);
+        // new notes
+      }
+    }
+    if (widget.args[0] == 'new') {
+      try {
+        await SQLHelper().createItem(noteTitle, noteText);
+      } catch (e) {
+        SnackBarService.showSnackBar(
+          content: const Text("Can't save note."),
+        );
+        debugPrint('$e');
+      }
+    } else {
+      try {
+        await SQLHelper().updateItem(noteTitle, noteText, widget.args[1][0]);
+      } catch (e) {
+        SnackBarService.showSnackBar(
+          content: const Text("Can't save note."),
+        );
+        debugPrint('$e');
       }
     }
   }
@@ -100,6 +124,7 @@ class _TextEditorState extends State<TextEditor> {
   Widget build(BuildContext context) {
     // nanti bikin ini bisa sesuai languange hp yaa, jadi datetime format sesuai
     final dateFormatter = DateFormat('hh:mm a');
+
     // NavigationService service = NavigationService();
     return WillPopScope(
       onWillPop: _onWillPop,

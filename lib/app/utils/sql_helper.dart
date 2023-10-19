@@ -32,11 +32,12 @@ class SQLHelper {
 
   Future<int> updateItem(String title, String text, int id) async {
     final db = await SQLHelper().db();
-    final data = {constants.title: text, constants.text: text};
-    return await db.update(constants.tableName, data,
+    final data = {constants.title: title, constants.text: text};
+    final update = db.update(constants.tableName, data,
         where: 'id = ?',
         whereArgs: [id],
         conflictAlgorithm: ConflictAlgorithm.replace);
+    return update;
   }
 
   Future<List<Map<String, dynamic>>> getAllItem() async {
@@ -44,11 +45,11 @@ class SQLHelper {
     return db.query(constants.tableName, orderBy: 'id');
   }
 
-  Future<List<Map<String, dynamic>>> getItemByID(int id) async {
-    final db = await SQLHelper().db();
-    return db.query(constants.tableName,
-        where: "id = ?", whereArgs: [id], limit: 1);
-  }
+  // Future<List<Map<String, dynamic>>> getItemByID(int id) async {
+  //   final db = await SQLHelper().db();
+  //   return db.query(constants.tableName,
+  //       where: "id = ?", whereArgs: [id], limit: 1);
+  // }
 
   Future<void> deleteItem(int id) async {
     final db = await SQLHelper().db();

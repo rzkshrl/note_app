@@ -29,6 +29,23 @@ class NoteAppTheme {
     iconTheme: IconThemeData(
       color: light,
     ),
+    checkboxTheme: CheckboxThemeData(
+      fillColor: MaterialStateProperty.resolveWith((states) {
+        if (states.contains(MaterialState.selected)) {
+          return blue;
+        }
+        return Colors.transparent;
+      }),
+      checkColor: MaterialStateProperty.resolveWith((states) {
+        if (states.contains(MaterialState.selected)) {
+          return light;
+        }
+        return light.withOpacity(0.5);
+      }),
+      side: BorderSide(
+        color: light.withOpacity(0.5),
+      ),
+    ),
     floatingActionButtonTheme: FloatingActionButtonThemeData(
       backgroundColor: blue,
       foregroundColor: light,
@@ -105,6 +122,23 @@ class NoteAppTheme {
     ),
     bottomSheetTheme:
         const BottomSheetThemeData(modalBackgroundColor: Colors.transparent),
+    checkboxTheme: CheckboxThemeData(
+      fillColor: MaterialStateProperty.resolveWith((states) {
+        if (states.contains(MaterialState.selected)) {
+          return blue;
+        }
+        return Colors.transparent;
+      }),
+      checkColor: MaterialStateProperty.resolveWith((states) {
+        if (states.contains(MaterialState.selected)) {
+          return light;
+        }
+        return light.withOpacity(0.5);
+      }),
+      side: BorderSide(
+        color: dark.withOpacity(0.5),
+      ),
+    ),
     floatingActionButtonTheme: FloatingActionButtonThemeData(
       backgroundColor: blue,
       foregroundColor: light,
@@ -147,6 +181,11 @@ class NoteAppTheme {
         color: greyDark,
         fontSize: 12.sp,
         fontWeight: FontWeight.w500,
+      ),
+      displaySmall: TextStyle(
+        color: greyDark,
+        fontSize: 12.sp,
+        fontWeight: FontWeight.normal,
       ),
       titleLarge: TextStyle(
         color: dark.withOpacity(0.7),
