@@ -98,35 +98,27 @@ class _TextEditorState extends State<TextEditor> {
         }
       }
     }
-    setState(() {
-      debugPrint('ini noteTitle ${widget.args[1][1]}');
-      debugPrint('ini noteTitleOnChange ${noteTitleOnChange}');
-      debugPrint('ini titleTextController ${titleTextController.text}');
-      debugPrint('-------------------------------------------------');
-      debugPrint('ini noteText ${widget.args[1][2]}');
-      debugPrint('ini noteTextOnChange ${noteTextOnChange}');
-      debugPrint('ini textTextController ${textTextController.text}');
-    });
-    if (widget.args[0] == 'update') {
-      if (widget.args[1][1] != titleTextController.text ||
-          widget.args[1][2] != textTextController.text) {
+
+    if (widget.args[0] == 'update' &&
+        (widget.args[1][1] != titleTextController.text ||
+            widget.args[1][2] != textTextController.text)) {
+      await Future.delayed(Duration(milliseconds: 50));
+      promptSaveUpdatedItems(context, () {
         Navigator.of(context).pushReplacementNamed(homeViewRoute);
-      } else {
-        await Future.delayed(Duration(milliseconds: 50));
-        promptSaveUpdatedItems(context, () {
+      }, () {
+        try {
+          SQLHelper()
+              .updateItem(noteTitle, noteText, widget.args[1][0], dateTimeNow);
           Navigator.of(context).pushReplacementNamed(homeViewRoute);
-        }, () {
-          try {
-            SQLHelper().updateItem(
-                noteTitle, noteText, widget.args[1][0], dateTimeNow);
-          } catch (e) {
-            SnackBarService.showSnackBar(
-              content: const Text("Can't save note."),
-            );
-            debugPrint('$e');
-          }
-        });
-      }
+        } catch (e) {
+          SnackBarService.showSnackBar(
+            content: const Text("Can't save note."),
+          );
+          debugPrint('$e');
+        }
+      });
+    } else {
+      Navigator.of(context).pushReplacementNamed(homeViewRoute);
     }
   }
 
@@ -209,9 +201,8 @@ class _TextEditorState extends State<TextEditor> {
     }
   }
 
-  Future<bool> _onWillPop() async {
-    handleBack();
-    await Navigator.of(context).pushReplacementNamed(homeViewRoute);
+  Future<bool> onWillPop() async {
+    await handleBack();
 
     return true;
   }
@@ -222,7 +213,7 @@ class _TextEditorState extends State<TextEditor> {
 
     // NavigationService service = NavigationService();
     return WillPopScope(
-      onWillPop: _onWillPop,
+      onWillPop: onWillPop,
       child: Scaffold(
         body: CustomScrollView(
           physics: const BouncingScrollPhysics(),

@@ -32,6 +32,7 @@ dependencies:
   flutter:
     sdk: flutter
   font_awesome_flutter: ^10.5.0
+  footer: ^0.0.4
   get_it: ^7.6.4
   hexcolor: ^3.0.1
   intl: ^0.18.1
