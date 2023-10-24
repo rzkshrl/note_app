@@ -1,5 +1,7 @@
 // ignore_for_file: deprecated_member_use, unnecessary_string_interpolations
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:intl/intl.dart';
@@ -9,6 +11,7 @@ import 'package:note_app/app/utils/constants.dart';
 import 'package:note_app/app/utils/sql_helper.dart';
 import 'package:sizer/sizer.dart';
 
+import '../utils/modalsheet.dart';
 import '../utils/snackbar.dart';
 
 class TextEditor extends StatefulWidget {
@@ -23,6 +26,9 @@ class TextEditor extends StatefulWidget {
 class _TextEditorState extends State<TextEditor> {
   String noteTitle = '';
   String noteText = '';
+
+  String noteTitleOnChange = '';
+  String noteTextOnChange = '';
 
   var constants = Constants();
 
@@ -63,7 +69,69 @@ class _TextEditorState extends State<TextEditor> {
     super.dispose();
   }
 
-  void handleBack() async {
+  Future<void> handleBack() async {
+    final dateTimeNow = DateTime.now().toIso8601String();
+    if (noteTitle.isEmpty) {
+      // go back/dismiss page without saving
+      if (noteText.isEmpty) {
+        if (widget.args[0] == 'new') {
+          Navigator.of(context).pushReplacementNamed(homeViewRoute);
+        }
+      } else {
+        String title = noteText.split('\n')[0];
+        if (title.length > 16) {
+          title = title.substring(0, 16);
+        }
+        setState(() {
+          noteTitle = title;
+        });
+        if (widget.args[0] == 'new') {
+          try {
+            await SQLHelper().createItem(noteTitle, noteText, dateTimeNow);
+            Navigator.of(context).pushReplacementNamed(homeViewRoute);
+          } catch (e) {
+            SnackBarService.showSnackBar(
+              content: const Text("Can't save note."),
+            );
+            debugPrint('$e');
+          }
+        }
+      }
+    }
+    setState(() {
+      debugPrint('ini noteTitle ${widget.args[1][1]}');
+      debugPrint('ini noteTitleOnChange ${noteTitleOnChange}');
+      debugPrint('ini titleTextController ${titleTextController.text}');
+      debugPrint('-------------------------------------------------');
+      debugPrint('ini noteText ${widget.args[1][2]}');
+      debugPrint('ini noteTextOnChange ${noteTextOnChange}');
+      debugPrint('ini textTextController ${textTextController.text}');
+    });
+    if (widget.args[0] == 'update') {
+      if (widget.args[1][1] != titleTextController.text ||
+          widget.args[1][2] != textTextController.text) {
+        Navigator.of(context).pushReplacementNamed(homeViewRoute);
+      } else {
+        await Future.delayed(Duration(milliseconds: 50));
+        promptSaveUpdatedItems(context, () {
+          Navigator.of(context).pushReplacementNamed(homeViewRoute);
+        }, () {
+          try {
+            SQLHelper().updateItem(
+                noteTitle, noteText, widget.args[1][0], dateTimeNow);
+          } catch (e) {
+            SnackBarService.showSnackBar(
+              content: const Text("Can't save note."),
+            );
+            debugPrint('$e');
+          }
+        });
+      }
+    }
+  }
+
+  Future<void> saveNotes() async {
+    final dateTimeNow = DateTime.now().toIso8601String();
     if (noteTitle.isEmpty) {
       // go back/dismiss page without saving
       if (noteText.isEmpty) {
@@ -76,21 +144,22 @@ class _TextEditorState extends State<TextEditor> {
         setState(() {
           noteTitle = title;
         });
-        // new notes
+        if (widget.args[0] == 'new') {
+          try {
+            await SQLHelper().createItem(noteTitle, noteText, dateTimeNow);
+          } catch (e) {
+            SnackBarService.showSnackBar(
+              content: const Text("Can't save note."),
+            );
+            debugPrint('$e');
+          }
+        }
       }
     }
-    if (widget.args[0] == 'new') {
+    if (widget.args[0] == 'update') {
       try {
-        await SQLHelper().createItem(noteTitle, noteText);
-      } catch (e) {
-        SnackBarService.showSnackBar(
-          content: const Text("Can't save note."),
-        );
-        debugPrint('$e');
-      }
-    } else {
-      try {
-        await SQLHelper().updateItem(noteTitle, noteText, widget.args[1][0]);
+        SQLHelper()
+            .updateItem(noteTitle, noteText, widget.args[1][0], dateTimeNow);
       } catch (e) {
         SnackBarService.showSnackBar(
           content: const Text("Can't save note."),
@@ -101,14 +170,41 @@ class _TextEditorState extends State<TextEditor> {
   }
 
   String extractDatefromTimeStamp() {
-    final currentDate = DateTime.now();
-    final formattedDate = DateFormat('MMM dd').format(currentDate);
+    if (widget.args[0] == 'new') {
+      final currentDate = DateTime.now();
+      final formattedDate = DateFormat('MMM dd').format(currentDate);
 
-    if (currentDate.year == currentDate.year &&
-        currentDate.month == currentDate.month &&
-        currentDate.day == currentDate.day) {
-      return 'Today';
+      if (currentDate.year == currentDate.year &&
+          currentDate.month == currentDate.month &&
+          currentDate.day == currentDate.day) {
+        return 'Today';
+      } else {
+        return formattedDate;
+      }
     } else {
+      final currentDate = DateTime.now();
+      final date = DateTime.parse(widget.args[1][3]);
+      final formattedDate = DateFormat('MMM dd').format(date);
+
+      if (currentDate.year == date.year &&
+          currentDate.month == date.month &&
+          currentDate.day == date.day) {
+        return 'Today';
+      } else {
+        return formattedDate;
+      }
+    }
+  }
+
+  String extractTimefromTimeStamp() {
+    if (widget.args[0] == 'new') {
+      final currentDate = DateTime.now();
+      final formattedDate = DateFormat('hh:mm a').format(currentDate);
+
+      return formattedDate;
+    } else {
+      final date = DateTime.parse(widget.args[1][3]);
+      final formattedDate = DateFormat('hh:mm a').format(date);
       return formattedDate;
     }
   }
@@ -123,7 +219,6 @@ class _TextEditorState extends State<TextEditor> {
   @override
   Widget build(BuildContext context) {
     // nanti bikin ini bisa sesuai languange hp yaa, jadi datetime format sesuai
-    final dateFormatter = DateFormat('hh:mm a');
 
     // NavigationService service = NavigationService();
     return WillPopScope(
@@ -133,6 +228,7 @@ class _TextEditorState extends State<TextEditor> {
           physics: const BouncingScrollPhysics(),
           slivers: [
             SliverAppBar(
+              automaticallyImplyLeading: false,
               backgroundColor: Theme.of(context).scaffoldBackgroundColor,
               floating: false,
               toolbarHeight: 6.h,
@@ -141,8 +237,7 @@ class _TextEditorState extends State<TextEditor> {
                 children: [
                   IconButton(
                     onPressed: () {
-                      // service.goBack();
-                      Navigator.of(context).pushReplacementNamed(homeViewRoute);
+                      handleBack();
                     },
                     icon: const FaIcon(FontAwesomeIcons.arrowLeft),
                   ),
@@ -153,12 +248,17 @@ class _TextEditorState extends State<TextEditor> {
                         icon: const FaIcon(FontAwesomeIcons.undoAlt),
                       ),
                       IconButton(
-                        onPressed: () {},
+                        onPressed: () {
+                          setState(() {
+                            promptSaveUpdatedItems(context, () {}, () {});
+                          });
+                        },
                         icon: const FaIcon(FontAwesomeIcons.redoAlt),
                       ),
                       IconButton(
                         onPressed: () {
-                          handleBack();
+                          saveNotes();
+
                           Navigator.of(context)
                               .pushReplacementNamed(homeViewRoute);
                         },
@@ -185,6 +285,13 @@ class _TextEditorState extends State<TextEditor> {
                                 height: 4.h,
                                 child: TextFormField(
                                   controller: titleTextController,
+                                  onChanged: (text) {
+                                    setState(() {
+                                      if (widget.args[0] == 'update') {
+                                        noteTitleOnChange = text;
+                                      }
+                                    });
+                                  },
                                   style: Theme.of(context)
                                       .textTheme
                                       .headlineSmall!
@@ -202,7 +309,7 @@ class _TextEditorState extends State<TextEditor> {
                             Padding(
                               padding: EdgeInsets.only(bottom: 1.h),
                               child: Text(
-                                '${extractDatefromTimeStamp()}, ${dateFormatter.format(DateTime.now())}',
+                                '${extractDatefromTimeStamp()}, ${extractTimefromTimeStamp()}',
                                 style: Theme.of(context)
                                     .textTheme
                                     .displayMedium!
@@ -217,6 +324,13 @@ class _TextEditorState extends State<TextEditor> {
                             EdgeInsets.only(left: 6.w, right: 6.w, bottom: 2.h),
                         child: TextFormField(
                           controller: textTextController,
+                          onChanged: (text) {
+                            setState(() {
+                              if (widget.args[0] == 'update') {
+                                noteTextOnChange = text;
+                              }
+                            });
+                          },
                           style: Theme.of(context)
                               .textTheme
                               .headlineSmall!
@@ -224,7 +338,7 @@ class _TextEditorState extends State<TextEditor> {
                           maxLines: null,
                           keyboardType: TextInputType.multiline,
                           textCapitalization: TextCapitalization.sentences,
-                          autofocus: true,
+                          autofocus: widget.args[0] == 'new' ? true : false,
                           toolbarOptions: const ToolbarOptions(
                             copy: true,
                             cut: true,

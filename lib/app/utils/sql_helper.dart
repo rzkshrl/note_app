@@ -11,7 +11,7 @@ class SQLHelper {
       ${constants.id} INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
       ${constants.title} TEXT,
       ${constants.text} TEXT,
-      ${constants.date} TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+      ${constants.date} TEXT NOT NULL
     )""");
   }
 
@@ -22,17 +22,39 @@ class SQLHelper {
     });
   }
 
-  Future<int> createItem(String title, String text) async {
+  Future<int> createItem(String title, String text, String timestamp) async {
     final db = await SQLHelper().db();
-    final data = {constants.title: title, constants.text: text};
+    final data = {
+      constants.title: title,
+      constants.text: text,
+      constants.date: timestamp
+    };
     final id = await db.insert(constants.tableName, data,
         conflictAlgorithm: ConflictAlgorithm.replace);
     return id;
   }
 
-  Future<int> updateItem(String title, String text, int id) async {
+  Future<int> updateItem(
+      String title, String text, int id, String timestamp) async {
     final db = await SQLHelper().db();
-    final data = {constants.title: title, constants.text: text};
+    final data = {
+      constants.title: title,
+      constants.text: text,
+      constants.date: timestamp
+    };
+    final update = db.update(constants.tableName, data,
+        where: 'id = ?',
+        whereArgs: [id],
+        conflictAlgorithm: ConflictAlgorithm.replace);
+    return update;
+  }
+
+  Future<int> updateItemWithoutDate(String title, String text, int id) async {
+    final db = await SQLHelper().db();
+    final data = {
+      constants.title: title,
+      constants.text: text,
+    };
     final update = db.update(constants.tableName, data,
         where: 'id = ?',
         whereArgs: [id],

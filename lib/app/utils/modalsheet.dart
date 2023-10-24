@@ -94,3 +94,62 @@ Widget promptDeleteAllItems(BuildContext context, void Function()? onPressed) {
     );
   });
 }
+
+void promptSaveUpdatedItems(BuildContext context, void Function()? discard,
+    void Function()? save) async {
+  await showModalBottomSheet(
+      context: context,
+      builder: (context) {
+        return Padding(
+          padding: EdgeInsets.only(bottom: 2.h, right: 4.w, left: 4.w),
+          child: Container(
+            padding: EdgeInsets.only(top: 4.h, bottom: 2.h),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(32),
+              color: Theme.of(context).canvasColor,
+            ),
+            child: Padding(
+              padding: EdgeInsets.only(right: 6.w, left: 6.w),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Save changes?',
+                    style: Theme.of(context)
+                        .textTheme
+                        .headlineLarge!
+                        .copyWith(fontSize: 10.sp),
+                  ),
+                  const SizedBox(height: 8.0),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      TextButton(
+                        onPressed: discard,
+                        child: Text(
+                          'DISCARD',
+                          style: Theme.of(context)
+                              .textTheme
+                              .titleMedium!
+                              .copyWith(fontSize: 10.sp),
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: save,
+                        child: Text(
+                          'SAVE',
+                          style: Theme.of(context)
+                              .textTheme
+                              .titleMedium!
+                              .copyWith(fontSize: 10.sp, color: red),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      });
+}
