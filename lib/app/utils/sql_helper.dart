@@ -73,10 +73,11 @@ class SQLHelper {
   //       where: "id = ?", whereArgs: [id], limit: 1);
   // }
 
-  Future<void> deleteItem(int id) async {
+  Future<void> deleteItem(List id) async {
     final db = await SQLHelper().db();
     try {
-      await db.delete(constants.tableName, where: "id = ?", whereArgs: [id]);
+      debugPrint('delete item jalan, $id');
+      await db.delete(constants.tableName, where: "id IN (${id.join(', ')})");
     } catch (e) {
       SnackBarService.showSnackBar(
         content: const Text("Can't delete item."),
