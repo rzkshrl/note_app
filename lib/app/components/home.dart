@@ -3,9 +3,8 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:footer/footer.dart';
-import 'package:footer/footer_view.dart';
 import 'package:intl/intl.dart';
 import 'package:note_app/app/routes/routing_constant.dart';
 import 'package:note_app/app/utils/modalSheet.dart';
@@ -35,11 +34,16 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
   Map<int, AnimationController> cAniItemNotes = {};
   late AnimationController cAniItemDeleteNotes;
 
+  ScrollController scrollController = ScrollController();
+
   bool isRotated = false;
   bool? isClicked = false;
   bool isFABClicked = false;
   bool isFABClicked2 = false;
   bool isLongPressed = false;
+
+  bool isLongPressActive = false;
+
   // bool status with index for item on listview
   Map<int, bool> isItemClicked = {};
   bool isItemDeletedClicked = false;
@@ -73,6 +77,21 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
       vsync: this,
       duration: const Duration(milliseconds: 100),
     );
+    scrollController.addListener(() {
+      handleScroll();
+    });
+  }
+
+  void handleScroll() {
+    for (int index in cAniItemNotes.keys) {
+      if (scrollController.position.userScrollDirection ==
+              ScrollDirection.reverse ||
+          scrollController.position.userScrollDirection ==
+              ScrollDirection.forward) {
+        cAniItemNotes[index]!.reverse();
+        selectedItems[index] = false;
+      }
+    }
   }
 
   // handle animation on AllNotes category
@@ -226,8 +245,8 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
                                       cAniFAB.forward();
                                       cAniFAB2.forward();
                                     });
-                                    Future.delayed(Duration(milliseconds: 100),
-                                        () {
+                                    Future.delayed(
+                                        const Duration(milliseconds: 100), () {
                                       setState(() {
                                         cAniFAB.reverse();
                                         cAniFAB2.reverse();
@@ -297,7 +316,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
                           setState(() {
                             isClicked = !isClicked!;
                           });
-                          Future.delayed(Duration(milliseconds: 100), () {
+                          Future.delayed(const Duration(milliseconds: 100), () {
                             setState(() {
                               isClicked = false;
                             });
@@ -317,7 +336,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
                           setState(() {
                             isClicked = !isClicked!;
                           });
-                          Future.delayed(Duration(milliseconds: 100), () {
+                          Future.delayed(const Duration(milliseconds: 100), () {
                             setState(() {
                               isClicked = false;
                             });
@@ -339,7 +358,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
                           setState(() {
                             isClicked = !isClicked!;
                           });
-                          Future.delayed(Duration(milliseconds: 100), () {
+                          Future.delayed(const Duration(milliseconds: 100), () {
                             setState(() {
                               isClicked = false;
                             });
@@ -368,7 +387,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
                           setState(() {
                             isClicked = !isClicked!;
                           });
-                          Future.delayed(Duration(milliseconds: 100), () {
+                          Future.delayed(const Duration(milliseconds: 100), () {
                             setState(() {
                               isClicked = false;
                             });
@@ -385,6 +404,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
                 )
               : null,
           body: SingleChildScrollView(
+            controller: scrollController,
             physics: const BouncingScrollPhysics(),
             padding: EdgeInsets.only(left: 4.w, right: 4.w),
             child: FutureBuilder<List<Map<String, dynamic>>>(
@@ -842,6 +862,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
 
   @override
   void dispose() {
+    scrollController.dispose();
     cAniAllNotes.dispose();
     cAniFAB.dispose();
     cAniFAB2.dispose();

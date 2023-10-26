@@ -102,7 +102,7 @@ class _TextEditorState extends State<TextEditor> {
     if (widget.args[0] == 'update' &&
         (widget.args[1][1] != titleTextController.text ||
             widget.args[1][2] != textTextController.text)) {
-      await Future.delayed(Duration(milliseconds: 50));
+      await Future.delayed(const Duration(milliseconds: 50));
       promptSaveUpdatedItems(context, () {
         Navigator.of(context).pushReplacementNamed(homeViewRoute);
       }, () {
