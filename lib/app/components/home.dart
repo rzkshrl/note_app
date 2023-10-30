@@ -8,7 +8,6 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:note_app/app/routes/routing_constant.dart';
 import 'package:note_app/app/utils/floatingactionbutton.dart';
-import 'package:note_app/app/utils/modalSheet.dart';
 import 'package:note_app/app/utils/sql_helper.dart';
 import 'package:note_app/app/utils/textfield.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
@@ -18,6 +17,7 @@ import '../utils/button.dart';
 import '../utils/constants.dart';
 import '../utils/flexiblespacebar.dart';
 import '../utils/homeandselectiontoggle.dart';
+import '../utils/modalsheet.dart';
 import '../utils/popupmenu.dart';
 
 class Home extends StatefulWidget {
@@ -69,6 +69,8 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
 
   var titleFontSize = 0.sp;
 
+  var searchTextController = TextEditingController();
+
   @override
   void initState() {
     super.initState();
@@ -103,6 +105,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
         titleFontSize = isSliverAppBarExpanded ? 16.sp : 14.sp;
       });
     });
+    constants;
   }
 
   // stop animation when scrolling
@@ -429,444 +432,483 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
                   );
                 }
                 notesData = snapshot.data!;
-                return CustomScrollView(
-                  physics: const BouncingScrollPhysics(),
-                  controller: scrollController,
-                  slivers: [
-                    SliverAppBar(
-                      backgroundColor:
-                          Theme.of(context).scaffoldBackgroundColor,
-                      surfaceTintColor:
-                          Theme.of(context).scaffoldBackgroundColor,
-                      pinned: true,
-                      snap: false,
-                      floating: false,
-                      expandedHeight: 25.h,
-                      centerTitle: false,
-                      title: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            if (isSliverAppBarExpanded)
-                              if (isLongPressed)
-                                Row(
-                                  children: [
-                                    IconButton(
-                                      onPressed: () {
-                                        setState(() {
-                                          isLongPressed = false;
-                                          selectedItems.clear();
-                                          selectedNoteIds.clear();
-                                          allSelectedItems = false;
-                                        });
-                                      },
-                                      icon:
-                                          PhosphorIcon(PhosphorIcons.regular.x),
-                                    ),
-                                    Padding(
-                                      padding: EdgeInsets.only(left: 1.w),
-                                      child: Text(
-                                        "${getSelectedItemCount()} selected",
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .headlineLarge!
-                                            .copyWith(fontSize: titleFontSize),
+                return GestureDetector(
+                  onVerticalDragDown: (details) {
+                    for (int index in cAniItemNotes.keys) {
+                      cAniItemNotes[index]!.reverse();
+                      if (!isLongPressed) {
+                        selectedItems[index] = false;
+                      }
+                    }
+                  },
+                  onVerticalDragEnd: (details) {
+                    for (int index in cAniItemNotes.keys) {
+                      cAniItemNotes[index]!.reverse();
+                      if (!isLongPressed) {
+                        selectedItems[index] = false;
+                      }
+                    }
+                  },
+                  child: CustomScrollView(
+                    physics: const BouncingScrollPhysics(),
+                    controller: scrollController,
+                    slivers: [
+                      SliverAppBar(
+                        backgroundColor:
+                            Theme.of(context).scaffoldBackgroundColor,
+                        surfaceTintColor:
+                            Theme.of(context).scaffoldBackgroundColor,
+                        pinned: true,
+                        snap: false,
+                        floating: false,
+                        expandedHeight: 25.h,
+                        centerTitle: false,
+                        title: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              if (isSliverAppBarExpanded)
+                                if (isLongPressed)
+                                  Row(
+                                    children: [
+                                      IconButton(
+                                        onPressed: () {
+                                          setState(() {
+                                            isLongPressed = false;
+                                            selectedItems.clear();
+                                            selectedNoteIds.clear();
+                                            allSelectedItems = false;
+                                          });
+                                        },
+                                        icon: PhosphorIcon(
+                                            PhosphorIcons.regular.x),
                                       ),
-                                    ),
-                                  ],
-                                )
-                              else
-                                InkWell(
-                                  highlightColor: Colors.transparent,
-                                  splashColor: Colors.transparent,
-                                  splashFactory: NoSplash.splashFactory,
-                                  onTap: () {
-                                    handleButtonClick();
-                                  },
-                                  child: Padding(
-                                    padding: EdgeInsets.only(left: 4.w),
-                                    child: Row(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          "All Notes",
+                                      Padding(
+                                        padding: EdgeInsets.only(left: 1.w),
+                                        child: Text(
+                                          "${getSelectedItemCount()} selected",
                                           style: Theme.of(context)
                                               .textTheme
                                               .headlineLarge!
                                               .copyWith(
                                                   fontSize: titleFontSize),
                                         ),
-                                        SizedBox(
-                                          width: 2.5.w,
-                                        ),
-                                        Padding(
-                                          padding: EdgeInsets.only(top: 0.1.h),
-                                          child: AnimatedBuilder(
-                                            animation: cAniAllNotes,
-                                            builder: (context, child) {
-                                              return Transform.rotate(
-                                                angle:
-                                                    cAniAllNotes.value * 1 * pi,
-                                                child: child,
-                                              );
-                                            },
-                                            child: const FaIcon(
-                                              FontAwesomeIcons.caretDown,
-                                              size: 14,
-                                            ),
+                                      ),
+                                    ],
+                                  )
+                                else
+                                  InkWell(
+                                    highlightColor: Colors.transparent,
+                                    splashColor: Colors.transparent,
+                                    splashFactory: NoSplash.splashFactory,
+                                    onTap: () {
+                                      handleButtonClick();
+                                    },
+                                    child: Padding(
+                                      padding: EdgeInsets.only(left: 4.w),
+                                      child: Row(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            "All Notes",
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .headlineLarge!
+                                                .copyWith(
+                                                    fontSize: titleFontSize),
                                           ),
-                                        )
-                                      ],
+                                          SizedBox(
+                                            width: 2.5.w,
+                                          ),
+                                          Padding(
+                                            padding:
+                                                EdgeInsets.only(top: 0.1.h),
+                                            child: AnimatedBuilder(
+                                              animation: cAniAllNotes,
+                                              builder: (context, child) {
+                                                return Transform.rotate(
+                                                  angle: cAniAllNotes.value *
+                                                      1 *
+                                                      pi,
+                                                  child: child,
+                                                );
+                                              },
+                                              child: const FaIcon(
+                                                FontAwesomeIcons.caretDown,
+                                                size: 14,
+                                              ),
+                                            ),
+                                          )
+                                        ],
+                                      ),
+                                    ),
+                                  )
+                              else
+                                const SizedBox(),
+                              PopupMenuButton<dynamic>(
+                                  tooltip: '',
+                                  icon: ClipOval(
+                                    child: Material(
+                                      color: Colors.transparent,
+                                      child: Icon(
+                                        Icons.more_vert_rounded,
+                                        color:
+                                            Theme.of(context).iconTheme.color,
+                                      ),
                                     ),
                                   ),
-                                )
-                            else
-                              const SizedBox(),
-                            PopupMenuButton<dynamic>(
-                                tooltip: '',
-                                icon: ClipOval(
-                                  child: Material(
-                                    color: Colors.transparent,
-                                    child: Icon(
-                                      Icons.more_vert_rounded,
-                                      color: Theme.of(context).iconTheme.color,
-                                    ),
-                                  ),
+                                  offset: Offset(-2.5.w, 5.5.h),
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius:
+                                          BorderRadius.circular(12.0)),
+                                  itemBuilder: (context) => [
+                                        buildPopupMenuItem(
+                                            'Grid view',
+                                            1,
+                                            Theme.of(context)
+                                                .popupMenuTheme
+                                                .textStyle!,
+                                            () {}),
+                                        CustomPopupMenuDivider(
+                                          color: Theme.of(context)
+                                              .iconTheme
+                                              .color!
+                                              .withOpacity(0.3),
+                                        ),
+                                        buildPopupMenuItem(
+                                            'Delete items',
+                                            2,
+                                            Theme.of(context)
+                                                .popupMenuTheme
+                                                .textStyle!, () {
+                                          setState(() {
+                                            promptDeleteAllItems(
+                                              context,
+                                              () {
+                                                setState(() {
+                                                  SQLHelper().deleteAllItem();
+                                                  Navigator.of(context).pop();
+                                                });
+                                              },
+                                            );
+                                          });
+                                        }),
+                                        CustomPopupMenuDivider(
+                                          color: Theme.of(context)
+                                              .iconTheme
+                                              .color!
+                                              .withOpacity(0.3),
+                                        ),
+                                        buildPopupMenuItem(
+                                            'Sort',
+                                            3,
+                                            Theme.of(context)
+                                                .popupMenuTheme
+                                                .textStyle!,
+                                            () {}),
+                                        CustomPopupMenuDivider(
+                                          color: Theme.of(context)
+                                              .iconTheme
+                                              .color!
+                                              .withOpacity(0.3),
+                                        ),
+                                        buildPopupMenuItem(
+                                            'Settings',
+                                            4,
+                                            Theme.of(context)
+                                                .popupMenuTheme
+                                                .textStyle!,
+                                            () {}),
+                                      ]),
+                            ]),
+                        flexibleSpace: FlexibleSpaceBar(
+                          background: Padding(
+                            padding: EdgeInsets.only(
+                                top: 5.h, left: 4.w, right: 4.w),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                toggleTitleHome(
+                                    isLongPressed,
+                                    context,
+                                    () {
+                                      setState(() {
+                                        isLongPressed = false;
+                                        selectedItems.clear();
+                                        selectedNoteIds.clear();
+                                        allSelectedItems = false;
+                                      });
+                                    },
+                                    getSelectedItemCount(),
+                                    () {
+                                      handleButtonClick();
+                                    },
+                                    cAniAllNotes,
+                                    notesData),
+                                SizedBox(
+                                  height: 3.h,
                                 ),
-                                offset: Offset(-2.5.w, 5.5.h),
-                                shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12.0)),
-                                itemBuilder: (context) => [
-                                      buildPopupMenuItem(
-                                          'Grid view',
-                                          1,
-                                          Theme.of(context)
-                                              .popupMenuTheme
-                                              .textStyle!,
-                                          () {}),
-                                      CustomPopupMenuDivider(
-                                        color: Theme.of(context)
-                                            .iconTheme
-                                            .color!
-                                            .withOpacity(0.3),
-                                      ),
-                                      buildPopupMenuItem(
-                                          'Delete items',
-                                          2,
-                                          Theme.of(context)
-                                              .popupMenuTheme
-                                              .textStyle!, () {
-                                        setState(() {
-                                          promptDeleteAllItems(
-                                            context,
-                                            () {
-                                              setState(() {
-                                                SQLHelper().deleteAllItem();
-                                                Navigator.of(context).pop();
-                                              });
-                                            },
-                                          );
-                                        });
-                                      }),
-                                      CustomPopupMenuDivider(
-                                        color: Theme.of(context)
-                                            .iconTheme
-                                            .color!
-                                            .withOpacity(0.3),
-                                      ),
-                                      buildPopupMenuItem(
-                                          'Sort',
-                                          3,
-                                          Theme.of(context)
-                                              .popupMenuTheme
-                                              .textStyle!,
-                                          () {}),
-                                      CustomPopupMenuDivider(
-                                        color: Theme.of(context)
-                                            .iconTheme
-                                            .color!
-                                            .withOpacity(0.3),
-                                      ),
-                                      buildPopupMenuItem(
-                                          'Settings',
-                                          4,
-                                          Theme.of(context)
-                                              .popupMenuTheme
-                                              .textStyle!,
-                                          () {}),
-                                    ]),
-                          ]),
-                      flexibleSpace: FlexibleSpaceBar(
-                        background: Padding(
-                          padding:
-                              EdgeInsets.only(top: 5.h, left: 4.w, right: 4.w),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              toggleTitleHome(
-                                  isLongPressed,
-                                  context,
-                                  () {
-                                    setState(() {
-                                      isLongPressed = false;
-                                      selectedItems.clear();
-                                      selectedNoteIds.clear();
-                                      allSelectedItems = false;
-                                    });
-                                  },
-                                  getSelectedItemCount(),
-                                  () {
-                                    handleButtonClick();
-                                  },
-                                  cAniAllNotes,
-                                  notesData),
-                              SizedBox(
-                                height: 3.h,
-                              ),
-                              searchBox(isLongPressed, context),
-                              SizedBox(
-                                height: 2.h,
-                              ),
-                            ],
+                                searchBox(isLongPressed, context,
+                                    searchTextController, (text) {
+                                  setState(() {
+                                    SQLHelper().getItemBySearch(text);
+                                  });
+                                }),
+                                SizedBox(
+                                  height: 2.h,
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                    SliverList(
-                      delegate: SliverChildBuilderDelegate(childCount: 1,
-                          (context, index) {
-                        return Padding(
-                            padding: EdgeInsets.only(left: 4.w, right: 4.w),
-                            child: ListView.builder(
-                                shrinkWrap: true,
-                                itemCount: notesData.length,
-                                physics: const BouncingScrollPhysics(),
-                                padding: EdgeInsets.only(bottom: 0.1.h),
-                                itemBuilder: (context, index) {
-                                  var itemNotes = notesData[index];
-                                  final date = extractDatefromTimeStamp(
-                                      itemNotes[constants.date]);
-                                  // initiate state for animationController with index and the status bool
-                                  if (cAniItemNotes[index] == null) {
-                                    cAniItemNotes[index] = AnimationController(
-                                      vsync: this,
-                                      duration:
-                                          const Duration(milliseconds: 100),
-                                    );
-                                    isItemClicked[index] = false;
-                                  }
-
-                                  if (selectedItems.length <= index) {
-                                    selectedItems.add(false);
-                                  }
-
-                                  return AnimatedBuilder(
-                                    animation: cAniItemNotes[index]!,
-                                    builder: (
-                                      context,
-                                      child,
-                                    ) {
-                                      return ScaleTransition(
-                                        scale: Tween(begin: 1.0, end: 0.95)
-                                            .animate(cAniItemNotes[index]!),
-                                        child: child,
+                      SliverList(
+                        delegate: SliverChildBuilderDelegate(childCount: 1,
+                            (context, index) {
+                          return Padding(
+                              padding: EdgeInsets.only(left: 4.w, right: 4.w),
+                              child: ListView.builder(
+                                  shrinkWrap: true,
+                                  itemCount: notesData.length,
+                                  physics: const BouncingScrollPhysics(),
+                                  padding: EdgeInsets.only(bottom: 0.1.h),
+                                  itemBuilder: (context, index) {
+                                    var itemNotes = notesData[index];
+                                    final date = extractDatefromTimeStamp(
+                                        itemNotes[constants.date]);
+                                    // initiate state for animationController with index and the status bool
+                                    if (cAniItemNotes[index] == null) {
+                                      cAniItemNotes[index] =
+                                          AnimationController(
+                                        vsync: this,
+                                        duration:
+                                            const Duration(milliseconds: 100),
                                       );
-                                    },
-                                    child: Padding(
-                                      padding: EdgeInsets.only(bottom: 1.155.h),
-                                      child: GestureDetector(
-                                        onLongPressDown: (details) {
-                                          cAniItemNotes[index]!.forward();
-                                        },
-                                        onLongPressStart: (details) {
-                                          selectedItems[index] =
-                                              !selectedItems[index];
-                                        },
-                                        onLongPressEnd: (details) async {
-                                          await cAniItemNotes[index]!.reverse();
-                                          setState(() {
-                                            isLongPressed = true;
-                                            if (selectedItems[index] == true) {
-                                              selectedNoteIds
-                                                  .add(itemNotes[constants.id]);
-                                            }
+                                      isItemClicked[index] = false;
+                                    }
 
-                                            debugPrint(
-                                                'ini selectedNoteIds : $selectedNoteIds');
-                                            // isItemDeletedClicked = !isItemDeletedClicked;
-                                            // cAniItemDeleteNotes.forward;
-                                          });
-                                        },
-                                        child: InkWell(
-                                          highlightColor: Colors.transparent,
-                                          splashColor: Colors.transparent,
-                                          splashFactory: NoSplash.splashFactory,
-                                          onTap: () async {
-                                            if (isLongPressed == true) {
-                                              selectedItems[index] =
-                                                  !selectedItems[index];
-                                              setState(() {
-                                                if (selectedItems[index] ==
-                                                    true) {
-                                                  selectedNoteIds.add(
-                                                      itemNotes[constants.id]);
-                                                } else {
-                                                  selectedNoteIds.removeWhere(
-                                                      (e) =>
-                                                          e ==
-                                                          itemNotes[
-                                                              constants.id]);
-                                                }
-                                                debugPrint(
-                                                    'ini selectedNoteIds : $selectedNoteIds');
-                                                debugPrint(
-                                                    'ini selectedItems : $selectedItems');
+                                    if (selectedItems.length <= index) {
+                                      selectedItems.add(false);
+                                    }
+
+                                    return AnimatedBuilder(
+                                      animation: cAniItemNotes[index]!,
+                                      builder: (
+                                        context,
+                                        child,
+                                      ) {
+                                        return ScaleTransition(
+                                          scale: Tween(begin: 1.0, end: 0.95)
+                                              .animate(cAniItemNotes[index]!),
+                                          child: child,
+                                        );
+                                      },
+                                      child: Padding(
+                                        padding:
+                                            EdgeInsets.only(bottom: 1.155.h),
+                                        child: GestureDetector(
+                                          onLongPressDown: (details) {
+                                            cAniItemNotes[index]!.forward();
+                                          },
+                                          onLongPressStart: (details) {
+                                            selectedItems[index] =
+                                                !selectedItems[index];
+                                          },
+                                          onLongPressEnd: (details) async {
+                                            await cAniItemNotes[index]!
+                                                .reverse();
+                                            setState(() {
+                                              isLongPressed = true;
+                                              if (selectedItems[index] ==
+                                                  true) {
+                                                selectedNoteIds.add(
+                                                    itemNotes[constants.id]);
+                                              }
+
+                                              debugPrint(
+                                                  'ini selectedNoteIds : $selectedNoteIds');
+                                              // isItemDeletedClicked = !isItemDeletedClicked;
+                                              // cAniItemDeleteNotes.forward;
+                                            });
+                                          },
+                                          child: InkWell(
+                                            highlightColor: Colors.transparent,
+                                            splashColor: Colors.transparent,
+                                            splashFactory:
+                                                NoSplash.splashFactory,
+                                            onTap: () async {
+                                              if (isLongPressed == true) {
+                                                selectedItems[index] =
+                                                    !selectedItems[index];
+                                                setState(() {
+                                                  if (selectedItems[index] ==
+                                                      true) {
+                                                    selectedNoteIds.add(
+                                                        itemNotes[
+                                                            constants.id]);
+                                                  } else {
+                                                    selectedNoteIds.removeWhere(
+                                                        (e) =>
+                                                            e ==
+                                                            itemNotes[
+                                                                constants.id]);
+                                                  }
+                                                  debugPrint(
+                                                      'ini selectedNoteIds : $selectedNoteIds');
+                                                  debugPrint(
+                                                      'ini selectedItems : $selectedItems');
+                                                  Future.delayed(
+                                                      const Duration(
+                                                          milliseconds: 20),
+                                                      () {
+                                                    cAniItemNotes[index]!
+                                                        .reverse();
+                                                  });
+                                                });
+                                              } else {
+                                                cAniItemNotes[index]!.forward();
                                                 Future.delayed(
                                                     const Duration(
-                                                        milliseconds: 20), () {
+                                                        milliseconds: 70), () {
                                                   cAniItemNotes[index]!
                                                       .reverse();
                                                 });
-                                              });
-                                            } else {
-                                              cAniItemNotes[index]!.forward();
-                                              Future.delayed(
-                                                  const Duration(
-                                                      milliseconds: 70), () {
-                                                cAniItemNotes[index]!.reverse();
-                                              });
 
-                                              await Future.delayed(
-                                                      const Duration(
-                                                          milliseconds: 101))
-                                                  .then((value) =>
-                                                      Navigator.of(context)
-                                                          .pushReplacementNamed(
-                                                              textEditorUpdateViewRoute,
-                                                              arguments: [
-                                                            itemNotes[
-                                                                constants.id],
-                                                            itemNotes[constants
-                                                                .title],
-                                                            itemNotes[
-                                                                constants.text],
-                                                            itemNotes[
-                                                                constants.date]
-                                                          ]));
-                                            }
-                                          },
-                                          child: Container(
-                                            height: 9.h,
-                                            decoration: BoxDecoration(
-                                              color:
-                                                  Theme.of(context).canvasColor,
-                                              borderRadius:
-                                                  BorderRadius.circular(20),
-                                            ),
-                                            child: Padding(
-                                              padding: EdgeInsets.only(
-                                                  left: 4.w, right: 4.w),
-                                              child: Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment
-                                                        .spaceBetween,
-                                                children: [
-                                                  Column(
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment
-                                                            .center,
-                                                    crossAxisAlignment:
-                                                        CrossAxisAlignment
-                                                            .start,
-                                                    children: [
-                                                      Text(
-                                                        '${itemNotes[constants.title]}',
-                                                        style: Theme.of(context)
-                                                            .textTheme
-                                                            .headlineSmall,
-                                                      ),
-                                                      SizedBox(
-                                                        height: 0.55.h,
-                                                      ),
-                                                      Text(
-                                                        date,
-                                                        style: Theme.of(context)
-                                                            .textTheme
-                                                            .displayMedium,
-                                                      ),
-                                                    ],
-                                                  ),
-                                                  AnimatedBuilder(
-                                                    animation:
-                                                        cAniItemDeleteNotes,
-                                                    child: isLongPressed
-                                                        ? Checkbox(
-                                                            value:
-                                                                selectedItems[
-                                                                    index],
-                                                            onChanged: (value) {
-                                                              setState(() {
-                                                                selectedItems[
-                                                                        index] =
-                                                                    value!;
-                                                                if (value ==
-                                                                    true) {
-                                                                  selectedNoteIds.add(
-                                                                      itemNotes[
-                                                                          constants
-                                                                              .id]);
-                                                                } else {
-                                                                  selectedNoteIds.removeWhere((e) =>
-                                                                      e ==
-                                                                      itemNotes[
-                                                                          constants
-                                                                              .id]);
-                                                                }
-                                                                debugPrint(
-                                                                    'ini selectedNoteIds : $selectedNoteIds');
-                                                                debugPrint(
-                                                                    'ini selectedItems : $selectedItems');
-                                                                cAniItemNotes[
-                                                                        index]!
-                                                                    .forward()
-                                                                    .then((value) => Future.delayed(const Duration(
-                                                                            milliseconds:
-                                                                                60))
-                                                                        .then((value) =>
-                                                                            cAniItemNotes[index]!.reverse()));
-                                                              });
-                                                            })
-                                                        : const SizedBox(),
-                                                    builder: (
-                                                      context,
-                                                      child,
-                                                    ) {
-                                                      return SlideTransition(
-                                                        position: Tween<Offset>(
-                                                          begin: Offset.zero,
-                                                          end: const Offset(
-                                                              1.5, 0.0),
-                                                        ).animate(
-                                                          cAniItemDeleteNotes,
+                                                await Future.delayed(
+                                                        const Duration(
+                                                            milliseconds: 101))
+                                                    .then((value) =>
+                                                        Navigator.of(context)
+                                                            .pushReplacementNamed(
+                                                                textEditorUpdateViewRoute,
+                                                                arguments: [
+                                                              itemNotes[
+                                                                  constants.id],
+                                                              itemNotes[
+                                                                  constants
+                                                                      .title],
+                                                              itemNotes[
+                                                                  constants
+                                                                      .text],
+                                                              itemNotes[
+                                                                  constants
+                                                                      .date]
+                                                            ]));
+                                              }
+                                            },
+                                            child: Container(
+                                              height: 9.h,
+                                              decoration: BoxDecoration(
+                                                color: Theme.of(context)
+                                                    .canvasColor,
+                                                borderRadius:
+                                                    BorderRadius.circular(20),
+                                              ),
+                                              child: Padding(
+                                                padding: EdgeInsets.only(
+                                                    left: 4.w, right: 4.w),
+                                                child: Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment
+                                                          .spaceBetween,
+                                                  children: [
+                                                    Column(
+                                                      mainAxisAlignment:
+                                                          MainAxisAlignment
+                                                              .center,
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .start,
+                                                      children: [
+                                                        Text(
+                                                          '${itemNotes[constants.title]}',
+                                                          style: Theme.of(
+                                                                  context)
+                                                              .textTheme
+                                                              .headlineSmall,
                                                         ),
-                                                        child: child,
-                                                        // scale: Tween(begin: 1.0, end: 0.95)
-                                                        //     .animate(cAniItemNotes[index]!),
-                                                      );
-                                                    },
-                                                  ),
-                                                ],
+                                                        SizedBox(
+                                                          height: 0.55.h,
+                                                        ),
+                                                        Text(
+                                                          date,
+                                                          style: Theme.of(
+                                                                  context)
+                                                              .textTheme
+                                                              .displayMedium,
+                                                        ),
+                                                      ],
+                                                    ),
+                                                    AnimatedBuilder(
+                                                      animation:
+                                                          cAniItemDeleteNotes,
+                                                      child: isLongPressed
+                                                          ? Checkbox(
+                                                              value:
+                                                                  selectedItems[
+                                                                      index],
+                                                              onChanged:
+                                                                  (value) {
+                                                                setState(() {
+                                                                  selectedItems[
+                                                                          index] =
+                                                                      value!;
+                                                                  if (value ==
+                                                                      true) {
+                                                                    selectedNoteIds.add(
+                                                                        itemNotes[
+                                                                            constants.id]);
+                                                                  } else {
+                                                                    selectedNoteIds
+                                                                        .removeWhere((e) =>
+                                                                            e ==
+                                                                            itemNotes[constants.id]);
+                                                                  }
+                                                                  debugPrint(
+                                                                      'ini selectedNoteIds : $selectedNoteIds');
+                                                                  debugPrint(
+                                                                      'ini selectedItems : $selectedItems');
+                                                                  cAniItemNotes[
+                                                                          index]!
+                                                                      .forward()
+                                                                      .then((value) =>
+                                                                          Future.delayed(const Duration(milliseconds: 60)).then((value) =>
+                                                                              cAniItemNotes[index]!.reverse()));
+                                                                });
+                                                              })
+                                                          : const SizedBox(),
+                                                      builder: (
+                                                        context,
+                                                        child,
+                                                      ) {
+                                                        return SlideTransition(
+                                                          position:
+                                                              Tween<Offset>(
+                                                            begin: Offset.zero,
+                                                            end: const Offset(
+                                                                1.5, 0.0),
+                                                          ).animate(
+                                                            cAniItemDeleteNotes,
+                                                          ),
+                                                          child: child,
+                                                          // scale: Tween(begin: 1.0, end: 0.95)
+                                                          //     .animate(cAniItemNotes[index]!),
+                                                        );
+                                                      },
+                                                    ),
+                                                  ],
+                                                ),
                                               ),
                                             ),
                                           ),
                                         ),
                                       ),
-                                    ),
-                                  );
-                                }));
-                      }),
-                    )
-                  ],
+                                    );
+                                  }));
+                        }),
+                      )
+                    ],
+                  ),
                 );
               })),
     );

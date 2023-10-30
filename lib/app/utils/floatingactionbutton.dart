@@ -23,40 +23,40 @@ Widget showFAB(
                 highlightColor: Colors.transparent,
                 splashColor: Colors.transparent,
                 splashFactory: NoSplash.splashFactory,
-                child: Container(
-                  height: 100,
-                  width: 100,
-                  decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Theme.of(context)
-                          .floatingActionButtonTheme
-                          .backgroundColor),
-                  child: GestureDetector(
-                    onTap: () {
-                      cAniFAB.forward();
-                      cAniFAB2.forward();
+                child: GestureDetector(
+                  onTap: () {
+                    cAniFAB.forward();
+                    cAniFAB2.forward();
 
-                      Future.delayed(const Duration(milliseconds: 100), () {
-                        cAniFAB.reverse();
-                        cAniFAB2.reverse();
-                      });
+                    Future.delayed(const Duration(milliseconds: 100), () {
+                      cAniFAB.reverse();
+                      cAniFAB2.reverse();
+                    });
 
-                      Future.delayed(const Duration(milliseconds: 101))
-                          .then((value) {
-                        Navigator.of(context)
-                            .pushReplacementNamed(textEditorNewViewRoute);
-                      });
-                    },
-                    onLongPressDown: (details) {
-                      cAniFAB.forward();
-                      cAniFAB2.forward();
-                    },
-                    onLongPressEnd: (details) async {
-                      await cAniFAB.reverse();
-                      await cAniFAB2.reverse();
-                      await Navigator.of(context)
+                    Future.delayed(const Duration(milliseconds: 101))
+                        .then((value) {
+                      Navigator.of(context)
                           .pushReplacementNamed(textEditorNewViewRoute);
-                    },
+                    });
+                  },
+                  onLongPressDown: (details) {
+                    cAniFAB.forward();
+                    cAniFAB2.forward();
+                  },
+                  onLongPressEnd: (details) async {
+                    await cAniFAB.reverse();
+                    await cAniFAB2.reverse();
+                    await Navigator.of(context)
+                        .pushReplacementNamed(textEditorNewViewRoute);
+                  },
+                  child: Container(
+                    height: 100,
+                    width: 100,
+                    decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Theme.of(context)
+                            .floatingActionButtonTheme
+                            .backgroundColor),
                     child: AnimatedBuilder(
                       animation: cAniFAB,
                       builder: (context, child) {
@@ -65,8 +65,7 @@ Widget showFAB(
                           child: child,
                         );
                       },
-                      child: Padding(
-                        padding: EdgeInsets.only(left: 3.w, top: 4.45.h),
+                      child: Center(
                         child: FaIcon(FontAwesomeIcons.plus,
                             size: 18,
                             color: Theme.of(context)

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:note_app/app/utils/constants.dart';
 import 'package:note_app/app/utils/snackbar.dart';
+
 import 'package:sqflite/sqflite.dart';
 
 class SQLHelper {
@@ -67,11 +68,12 @@ class SQLHelper {
     return db.query(constants.tableName, orderBy: 'id');
   }
 
-  // Future<List<Map<String, dynamic>>> getItemByID(int id) async {
-  //   final db = await SQLHelper().db();
-  //   return db.query(constants.tableName,
-  //       where: "id = ?", whereArgs: [id], limit: 1);
-  // }
+  Future getItemBySearch(String search) async {
+    final db = await SQLHelper().db();
+
+    return db.query(constants.tableName,
+        where: "title LIKE $search OR text LIKE $search", orderBy: 'title ASC');
+  }
 
   Future<void> deleteItem(List id) async {
     final db = await SQLHelper().db();

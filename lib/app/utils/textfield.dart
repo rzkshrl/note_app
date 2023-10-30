@@ -1,14 +1,39 @@
+// ignore_for_file: deprecated_member_use
+
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:sizer/sizer.dart';
 
-Widget searchBox(bool isLongPressed, BuildContext context) {
+Widget searchBox(
+    bool isLongPressed,
+    BuildContext context,
+    TextEditingController searchTextController,
+    void Function(String)? onChanged) {
+  FocusScopeNode currentFocus = FocusScope.of(context);
   return Form(
     child: SizedBox(
       height: 5.h,
       child: TextFormField(
         enabled: !isLongPressed,
+        controller: searchTextController,
         style: Theme.of(context).textTheme.headlineSmall,
+        onChanged: onChanged,
+        onTap: () {
+          if (!currentFocus.hasPrimaryFocus) {
+            currentFocus.unfocus();
+          }
+        },
+        onTapOutside: (event) {
+          if (!currentFocus.hasPrimaryFocus) {
+            currentFocus.unfocus();
+          }
+        },
+        toolbarOptions: const ToolbarOptions(
+          copy: true,
+          cut: true,
+          paste: true,
+          selectAll: true,
+        ),
         decoration: InputDecoration(
           hintText: 'Search notes',
           hintStyle: isLongPressed
