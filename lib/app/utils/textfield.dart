@@ -6,6 +6,7 @@ import 'package:sizer/sizer.dart';
 
 Widget searchBox(
     bool isLongPressed,
+    bool isSearch,
     BuildContext context,
     TextEditingController searchTextController,
     void Function(String)? onChanged) {
@@ -26,6 +27,7 @@ Widget searchBox(
         onTapOutside: (event) {
           if (!currentFocus.hasPrimaryFocus) {
             currentFocus.unfocus();
+            isSearch = false;
           }
         },
         toolbarOptions: const ToolbarOptions(

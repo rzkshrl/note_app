@@ -68,11 +68,13 @@ class SQLHelper {
     return db.query(constants.tableName, orderBy: 'id');
   }
 
-  Future getItemBySearch(String search) async {
+  Future<List<Map<String, dynamic>>> getItemBySearch(String search) async {
     final db = await SQLHelper().db();
 
     return db.query(constants.tableName,
-        where: "title LIKE $search OR text LIKE $search", orderBy: 'title ASC');
+        where: "title LIKE ? OR text LIKE ?",
+        orderBy: 'title ASC',
+        whereArgs: [search]);
   }
 
   Future<void> deleteItem(List id) async {

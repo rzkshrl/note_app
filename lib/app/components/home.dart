@@ -57,7 +57,8 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
   bool isItemDeletedClicked = false;
 
   // initiate notesData from database
-  late List<Map<String, dynamic>> notesData;
+  List<Map<String, dynamic>> notesData = [];
+  List<Map<String, dynamic>> searchedNotesData = [];
 
   // init id and item status into set and list
   Set<int> selectedNoteIds = {};
@@ -70,6 +71,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
   var titleFontSize = 0.sp;
 
   var searchTextController = TextEditingController();
+  bool isSearch = false;
 
   @override
   void initState() {
@@ -183,6 +185,15 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
       debugPrint('$e');
       return [{}];
     }
+  }
+
+  // filter data with search on list
+  void searchToList(String searchString) {
+    searchedNotesData = notesData.where((notes) {
+      var title = notes['title'].toLowerCase();
+      return title.contains(searchString.toLowerCase());
+    }).toList();
+    setState(() {});
   }
 
   // convert timestamp to DateTime types/for sorting date
@@ -644,15 +655,15 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
                                       handleButtonClick();
                                     },
                                     cAniAllNotes,
-                                    notesData),
+                                    searchTextController.text.isEmpty
+                                        ? notesData
+                                        : searchedNotesData),
                                 SizedBox(
                                   height: 3.h,
                                 ),
-                                searchBox(isLongPressed, context,
+                                searchBox(isLongPressed, isSearch, context,
                                     searchTextController, (text) {
-                                  setState(() {
-                                    SQLHelper().getItemBySearch(text);
-                                  });
+                                  searchToList(text);
                                 }),
                                 SizedBox(
                                   height: 2.h,
@@ -669,11 +680,16 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
                               padding: EdgeInsets.only(left: 4.w, right: 4.w),
                               child: ListView.builder(
                                   shrinkWrap: true,
-                                  itemCount: notesData.length,
+                                  itemCount: searchTextController.text.isEmpty
+                                      ? notesData.length
+                                      : searchedNotesData.length,
                                   physics: const BouncingScrollPhysics(),
                                   padding: EdgeInsets.only(bottom: 0.1.h),
                                   itemBuilder: (context, index) {
-                                    var itemNotes = notesData[index];
+                                    var itemNotes =
+                                        searchTextController.text.isEmpty
+                                            ? notesData[index]
+                                            : searchedNotesData[index];
                                     final date = extractDatefromTimeStamp(
                                         itemNotes[constants.date]);
                                     // initiate state for animationController with index and the status bool
