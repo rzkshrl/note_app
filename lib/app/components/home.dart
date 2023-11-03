@@ -578,7 +578,8 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
                                             1,
                                             Theme.of(context)
                                                 .popupMenuTheme
-                                                .textStyle!,
+                                                .textStyle!
+                                                .copyWith(fontSize: 10.sp),
                                             () {}),
                                         CustomPopupMenuDivider(
                                           color: Theme.of(context)
@@ -591,7 +592,8 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
                                             2,
                                             Theme.of(context)
                                                 .popupMenuTheme
-                                                .textStyle!, () {
+                                                .textStyle!
+                                                .copyWith(fontSize: 10.sp), () {
                                           setState(() {
                                             promptDeleteAllItems(
                                               context,
@@ -615,7 +617,8 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
                                             3,
                                             Theme.of(context)
                                                 .popupMenuTheme
-                                                .textStyle!,
+                                                .textStyle!
+                                                .copyWith(fontSize: 10.sp),
                                             () {}),
                                         CustomPopupMenuDivider(
                                           color: Theme.of(context)
@@ -628,7 +631,8 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
                                             4,
                                             Theme.of(context)
                                                 .popupMenuTheme
-                                                .textStyle!,
+                                                .textStyle!
+                                                .copyWith(fontSize: 10.sp),
                                             () {}),
                                       ]),
                             ]),
@@ -841,7 +845,10 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
                                                           style: Theme.of(
                                                                   context)
                                                               .textTheme
-                                                              .headlineSmall,
+                                                              .headlineSmall!
+                                                              .copyWith(
+                                                                  fontSize:
+                                                                      12.sp),
                                                         ),
                                                         SizedBox(
                                                           height: 0.55.h,
@@ -851,7 +858,10 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
                                                           style: Theme.of(
                                                                   context)
                                                               .textTheme
-                                                              .displayMedium,
+                                                              .displayMedium!
+                                                              .copyWith(
+                                                                  fontSize:
+                                                                      12.sp),
                                                         ),
                                                       ],
                                                     ),

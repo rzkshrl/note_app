@@ -55,8 +55,7 @@ class NoteAppTheme {
     popupMenuTheme: PopupMenuThemeData(
       color: greyDark2,
       surfaceTintColor: Colors.transparent,
-      textStyle:
-          TextStyle(color: light, fontSize: 10.sp, fontWeight: FontWeight.w400),
+      textStyle: TextStyle(color: light, fontWeight: FontWeight.w400),
     ),
     cardColor: greyDark,
     canvasColor: greyDark2,
@@ -69,39 +68,31 @@ class NoteAppTheme {
     textTheme: TextTheme(
       headlineLarge: TextStyle(
         color: light,
-        fontSize: 16.sp,
       ),
       headlineMedium: TextStyle(
         color: light,
-        fontSize: 14.sp,
       ),
       headlineSmall: TextStyle(
         color: light,
-        fontSize: 12.sp,
       ),
       displayLarge: TextStyle(
         color: grey,
-        fontSize: 12.sp,
         fontWeight: FontWeight.normal,
       ),
       displayMedium: TextStyle(
         color: light.withOpacity(0.4),
-        fontSize: 12.sp,
         fontWeight: FontWeight.normal,
       ),
       displaySmall: TextStyle(
         color: greyDark,
-        fontSize: 12.sp,
         fontWeight: FontWeight.normal,
       ),
       titleLarge: TextStyle(
         color: light.withOpacity(0.7),
-        fontSize: 12.sp,
         fontWeight: FontWeight.normal,
       ),
       titleMedium: TextStyle(
         color: blue,
-        fontSize: 10.sp,
         fontWeight: FontWeight.normal,
       ),
     ),
@@ -162,39 +153,31 @@ class NoteAppTheme {
     textTheme: TextTheme(
       headlineLarge: TextStyle(
         color: dark,
-        fontSize: 16.sp,
       ),
       headlineMedium: TextStyle(
         color: dark,
-        fontSize: 14.sp,
       ),
       headlineSmall: TextStyle(
         color: dark,
-        fontSize: 12.sp,
       ),
       displayLarge: TextStyle(
         color: grey,
-        fontSize: 12.sp,
         fontWeight: FontWeight.normal,
       ),
       displayMedium: TextStyle(
         color: greyDark,
-        fontSize: 12.sp,
         fontWeight: FontWeight.w500,
       ),
       displaySmall: TextStyle(
         color: greyDark,
-        fontSize: 12.sp,
         fontWeight: FontWeight.normal,
       ),
       titleLarge: TextStyle(
         color: dark.withOpacity(0.7),
-        fontSize: 12.sp,
         fontWeight: FontWeight.normal,
       ),
       titleMedium: TextStyle(
         color: blue,
-        fontSize: 10.sp,
         fontWeight: FontWeight.normal,
       ),
     ),

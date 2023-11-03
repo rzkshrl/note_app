@@ -56,6 +56,46 @@ Widget btnLongPressedItemHome(
   });
 }
 
+Widget btnToolIcon(
+    bool selectedItems,
+    BuildContext context,
+    Widget icon,
+    void Function()? onTap,
+    void Function(LongPressEndDetails)? onLongPressEnd) {
+  bool? isClicked = false;
+  return StatefulBuilder(builder: (context, setState) {
+    return Material(
+      borderRadius: BorderRadius.circular(8),
+      color: isClicked! ? Theme.of(context).cardColor : Colors.transparent,
+      child: GestureDetector(
+        onLongPressDown: (details) {
+          setState(() {
+            isClicked = !isClicked!;
+          });
+        },
+        onLongPressEnd: onLongPressEnd,
+        child: InkWell(
+          highlightColor: Colors.transparent,
+          splashColor: Colors.transparent,
+          splashFactory: NoSplash.splashFactory,
+          borderRadius: BorderRadius.circular(8),
+          onTap: onTap,
+          child: SizedBox(
+            width: 12.w,
+            height: 5.h,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                icon,
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  });
+}
+
 Widget btnLongPressedItemHomeSelectAll(
     bool allSelectedItems,
     BuildContext context,

@@ -7,10 +7,13 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:intl/intl.dart';
 // import 'package:note_app/app/routes/navigation_service.dart';
 import 'package:note_app/app/routes/routing_constant.dart';
+import 'package:note_app/app/utils/button.dart';
 import 'package:note_app/app/utils/constants.dart';
 import 'package:note_app/app/utils/sql_helper.dart';
 import 'package:sizer/sizer.dart';
+import 'package:undo/undo.dart';
 
+import '../utils/icons.dart';
 import '../utils/modalsheet.dart';
 import '../utils/snackbar.dart';
 
@@ -31,9 +34,19 @@ class _TextEditorState extends State<TextEditor> {
   String noteTextOnChange = '';
 
   var constants = Constants();
+  var changes = ChangeStack();
 
   var titleTextController = TextEditingController();
   var textTextController = TextEditingController();
+
+  bool isUndoEnabled = false;
+  bool isRedoEnabled = false;
+
+  List<String> noteTextChanges = [];
+
+  void handleChanges() {
+    noteTextChanges = List.from(textTextController.text.split(' '));
+  }
 
   void handleTitleTextChange() {
     setState(() {
@@ -59,6 +72,7 @@ class _TextEditorState extends State<TextEditor> {
         (widget.args[0] == 'new' ? '' : widget.args[1][2]);
     titleTextController.addListener(handleTitleTextChange);
     textTextController.addListener(handleNoteTextChange);
+    changes;
     debugPrint('TEST ARGUMENTASI DIMENSI : ${widget.args[0]}');
   }
 
@@ -67,6 +81,10 @@ class _TextEditorState extends State<TextEditor> {
     titleTextController.dispose();
     textTextController.dispose();
     super.dispose();
+  }
+
+  FocusScopeNode currentFocus() {
+    return FocusScope.of(context);
   }
 
   Future<void> handleBack() async {
@@ -233,19 +251,46 @@ class _TextEditorState extends State<TextEditor> {
                     icon: const FaIcon(FontAwesomeIcons.arrowLeft),
                   ),
                   Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
                     children: [
-                      IconButton(
-                        onPressed: () {},
-                        icon: const FaIcon(FontAwesomeIcons.undoAlt),
-                      ),
-                      IconButton(
-                        onPressed: () {
-                          setState(() {
-                            promptSaveUpdatedItems(context, () {}, () {});
-                          });
-                        },
-                        icon: const FaIcon(FontAwesomeIcons.redoAlt),
-                      ),
+                      btnToolIcon(isUndoEnabled, context,
+                          iconUndo(context, isUndoEnabled), () {
+                        setState(() {
+                          if (textTextController.text == '') {
+                            return;
+                          } else {
+                            changes.undo();
+                          }
+                        });
+                      }, (details) {
+                        setState(() {
+                          if (textTextController.text == '') {
+                            return;
+                          } else {
+                            changes.undo();
+                          }
+                        });
+                      }),
+                      btnToolIcon(isRedoEnabled, context,
+                          iconRedo(context, isRedoEnabled), () {
+                        setState(() {
+                          changes.redo();
+                          if (textTextController.text == '') {
+                            return;
+                          } else {
+                            isUndoEnabled = true;
+                          }
+                        });
+                      }, (details) {
+                        setState(() {
+                          changes.redo();
+                          if (textTextController.text == '') {
+                            return;
+                          } else {
+                            isUndoEnabled = true;
+                          }
+                        });
+                      }),
                       IconButton(
                         onPressed: () {
                           saveNotes();
@@ -276,6 +321,16 @@ class _TextEditorState extends State<TextEditor> {
                                 height: 4.h,
                                 child: TextFormField(
                                   controller: titleTextController,
+                                  onTap: () {
+                                    if (!currentFocus().hasPrimaryFocus) {
+                                      currentFocus().unfocus();
+                                    }
+                                  },
+                                  onTapOutside: (event) {
+                                    if (!currentFocus().hasPrimaryFocus) {
+                                      currentFocus().unfocus();
+                                    }
+                                  },
                                   onChanged: (text) {
                                     setState(() {
                                       if (widget.args[0] == 'update') {
@@ -315,11 +370,56 @@ class _TextEditorState extends State<TextEditor> {
                             EdgeInsets.only(left: 6.w, right: 6.w, bottom: 2.h),
                         child: TextFormField(
                           controller: textTextController,
+                          onTap: () {
+                            if (!currentFocus().hasPrimaryFocus) {
+                              currentFocus().unfocus();
+                            }
+                          },
+                          onTapOutside: (event) {
+                            if (!currentFocus().hasPrimaryFocus) {
+                              currentFocus().unfocus();
+                            }
+                          },
                           onChanged: (text) {
                             setState(() {
+                              if (textTextController.text == '') {
+                                isUndoEnabled = false;
+                                isRedoEnabled = false;
+                              } else {
+                                isUndoEnabled = true;
+                                isRedoEnabled = true;
+                              }
+
                               if (widget.args[0] == 'update') {
                                 noteTextOnChange = text;
                               }
+                              handleChanges();
+
+                              changes.addGroup([
+                                Change(
+                                  textTextController.text,
+                                  () {
+                                    textTextController.text = text;
+                                  },
+                                  (oldValue) {
+                                    textTextController.text = oldValue;
+                                    if (oldValue.length - 1 ==
+                                            noteTextChanges.first.length ||
+                                        oldValue.length ==
+                                            noteTextChanges.first.length) {
+                                      textTextController.text = '';
+                                      isUndoEnabled = false;
+                                      debugPrint(
+                                          'oldValue.length - 1 : ${oldValue.length - 1}');
+                                      debugPrint('oldValue : ${oldValue}');
+                                      debugPrint(
+                                          'noteTextChanges : ${noteTextChanges.first}');
+                                      debugPrint(
+                                          'noteTextChanges.first.length : ${noteTextChanges.first.length}');
+                                    }
+                                  },
+                                ),
+                              ]);
                             });
                           },
                           style: Theme.of(context)
