@@ -13,200 +13,141 @@ Widget showSelectionBottomBar(
     List<Map<String, dynamic>> notesData,
     bool isClicked,
     bool allSelectedItems,
-    bool isLongPressed) {
-  return StatefulBuilder(builder: (context, setState) {
-    // call string constants
-    var constants = Constants();
-    return Container(
-      height: 6.h,
-      decoration:
-          BoxDecoration(color: Theme.of(context).scaffoldBackgroundColor),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          btnLongPressedItemHome(
-            selectedItems,
-            context,
-            PhosphorIcon(
-              PhosphorIcons.regular.pushPin,
-              color: selectedItems.contains(true)
-                  ? Theme.of(context).iconTheme.color
-                  : Theme.of(context).iconTheme.color!.withOpacity(0.2),
-            ),
-            'Pin',
-            () {
-              setState(() {
-                isClicked = !isClicked;
-              });
-              Future.delayed(const Duration(milliseconds: 100), () {
-                setState(() {
-                  isClicked = false;
-                });
-              });
-              //action
-            },
-            (details) {
-              setState(() {
-                isClicked = !isClicked;
-              });
-              //action
-            },
+    bool isLongPressed,
+    void setState(void Function() fn),
+    void Function() clear,
+    Widget btnLongPressedItemHomeSelectAll) {
+  // call string constants
+  var constants = Constants();
+
+  return Container(
+    height: 6.h,
+    decoration: BoxDecoration(color: Theme.of(context).scaffoldBackgroundColor),
+    child: Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        btnLongPressedItemHome(
+          selectedItems,
+          context,
+          PhosphorIcon(
+            PhosphorIcons.fill.pushPin,
+            color: selectedItems.contains(true)
+                ? Theme.of(context).iconTheme.color
+                : Theme.of(context).iconTheme.color!.withOpacity(0.2),
           ),
-          btnLongPressedItemHome(
-            selectedItems,
-            context,
-            PhosphorIcon(
-              PhosphorIcons.regular.star,
-              color: selectedItems.contains(true)
-                  ? Theme.of(context).iconTheme.color
-                  : Theme.of(context).iconTheme.color!.withOpacity(0.2),
-            ),
-            'Favorite',
-            () {
+          'Pin',
+          () {
+            setState(() {
+              isClicked = !isClicked;
+            });
+            Future.delayed(const Duration(milliseconds: 100), () {
               setState(() {
-                isClicked = !isClicked;
+                isClicked = false;
               });
-              Future.delayed(const Duration(milliseconds: 100), () {
-                setState(() {
-                  isClicked = false;
-                });
-              });
-              //action
-            },
-            (details) {
-              setState(() {
-                isClicked = !isClicked;
-              });
-              //action
-            },
-          ),
-          btnLongPressedItemHome(
-            selectedItems,
-            context,
-            PhosphorIcon(
-              PhosphorIcons.regular.trashSimple,
-              color: selectedItems.contains(true)
-                  ? Theme.of(context).iconTheme.color
-                  : Theme.of(context).iconTheme.color!.withOpacity(0.2),
-            ),
-            'Delete',
-            () {
-              setState(() {
-                isClicked = !isClicked;
-              });
-              Future.delayed(const Duration(milliseconds: 100), () {
-                setState(() {
-                  isClicked = false;
-                });
-              });
-              //action
-              promptDeleteItems(context, () {
-                SQLHelper().deleteItem(selectedNoteIds.toList());
-                setState(() {
-                  isLongPressed = false;
-                  selectedItems.clear();
-                  selectedNoteIds.clear();
-                });
-                Navigator.pop(context);
-              });
-            },
-            (details) {
-              setState(() {
-                isClicked = !isClicked;
-              });
-              //action
-              promptDeleteItems(context, () {
-                SQLHelper().deleteItem(selectedNoteIds.toList());
-                setState(() {
-                  isLongPressed = false;
-                  selectedItems.clear();
-                  selectedNoteIds.clear();
-                });
-                Navigator.pop(context);
-              });
-            },
-          ),
-          btnLongPressedItemHomeSelectAll(
-            allSelectedItems,
-            context,
-            PhosphorIcon(
-              !allSelectedItems
-                  ? PhosphorIcons.regular.checkSquare
-                  : PhosphorIcons.fill.checkSquare,
-              color: !allSelectedItems
-                  ? Theme.of(context).iconTheme.color
-                  : Theme.of(context).floatingActionButtonTheme.backgroundColor,
-            ),
-            () {
-              setState(() {
-                isClicked = !isClicked;
-              });
-              Future.delayed(const Duration(milliseconds: 100), () {
-                setState(() {
-                  isClicked = false;
-                });
-              });
-              //action
-              allSelectedItems = !allSelectedItems;
-              if (allSelectedItems) {
-                for (var item in notesData) {
-                  selectedNoteIds.add(item[constants.id]);
-                }
-                selectedItems = List<bool>.generate(
-                    selectedNoteIds.length, (index) => false);
-                for (var i = 0; i < selectedItems.length; i++) {
-                  selectedItems[i] = true;
-                }
-                debugPrint('select all');
-                debugPrint('selectedNoteIds : $selectedNoteIds');
-              } else if (!allSelectedItems) {
-                for (var item in notesData) {
-                  selectedNoteIds.remove(item[constants.id]);
-                }
-                selectedItems = List<bool>.generate(
-                    selectedNoteIds.length, (index) => false);
-                for (var i = 0; i < selectedItems.length; i++) {
-                  selectedItems[i] = false;
-                  allSelectedItems = false;
-                  debugPrint('deselect all');
-                  debugPrint('selectedNoteIds : $selectedNoteIds');
+            });
+            //action
+            setState(() {
+              for (var item in notesData) {
+                if (selectedNoteIds.contains(item[constants.id])) {
+                  if (item[constants.pin] == 0) {
+                    SQLHelper().pinItem(true, selectedNoteIds.toList());
+                  } else {
+                    SQLHelper().pinItem(false, selectedNoteIds.toList());
+                  }
+                  debugPrint('pinned item nih : ${item[constants.pin]}');
                 }
               }
-            },
-            (details) {
-              setState(() {
-                isClicked = !isClicked;
-              });
-              //action
-              allSelectedItems = !allSelectedItems;
-              if (allSelectedItems) {
-                for (var item in notesData) {
-                  selectedNoteIds.add(item[constants.id]);
-                }
-                selectedItems = List<bool>.generate(
-                    selectedNoteIds.length, (index) => false);
-                for (var i = 0; i < selectedItems.length; i++) {
-                  selectedItems[i] = true;
-                }
-                debugPrint('select all');
-                debugPrint('selectedNoteIds : $selectedNoteIds');
-              } else if (!allSelectedItems) {
-                for (var item in notesData) {
-                  selectedNoteIds.remove(item[constants.id]);
-                }
-                selectedItems = List<bool>.generate(
-                    selectedNoteIds.length, (index) => false);
-                for (var i = 0; i < selectedItems.length; i++) {
-                  selectedItems[i] = false;
-                  allSelectedItems = false;
-                  debugPrint('deselect all');
-                  debugPrint('selectedNoteIds : $selectedNoteIds');
+            });
+            clear();
+          },
+          (details) {
+            setState(() {
+              isClicked = !isClicked;
+            });
+            //action
+            setState(() {
+              for (var item in notesData) {
+                if (selectedNoteIds.contains(item[constants.id])) {
+                  if (item[constants.pin] == 0) {
+                    SQLHelper().pinItem(true, selectedNoteIds.toList());
+                  } else {
+                    SQLHelper().pinItem(false, selectedNoteIds.toList());
+                  }
+                  debugPrint('pinned item nih : ${item[constants.pin]}');
                 }
               }
-            },
+            });
+            clear();
+          },
+        ),
+        btnLongPressedItemHome(
+          selectedItems,
+          context,
+          PhosphorIcon(
+            PhosphorIcons.regular.star,
+            color: selectedItems.contains(true)
+                ? Theme.of(context).iconTheme.color
+                : Theme.of(context).iconTheme.color!.withOpacity(0.2),
           ),
-        ],
-      ),
-    );
-  });
+          'Favorite',
+          () {
+            setState(() {
+              isClicked = !isClicked;
+            });
+            Future.delayed(const Duration(milliseconds: 100), () {
+              setState(() {
+                isClicked = false;
+              });
+            });
+            //action
+          },
+          (details) {
+            setState(() {
+              isClicked = !isClicked;
+            });
+            //action
+          },
+        ),
+        btnLongPressedItemHome(
+          selectedItems,
+          context,
+          PhosphorIcon(
+            PhosphorIcons.regular.trashSimple,
+            color: selectedItems.contains(true)
+                ? Theme.of(context).iconTheme.color
+                : Theme.of(context).iconTheme.color!.withOpacity(0.2),
+          ),
+          'Delete',
+          () {
+            setState(() {
+              isClicked = !isClicked;
+            });
+            Future.delayed(const Duration(milliseconds: 100), () {
+              setState(() {
+                isClicked = false;
+              });
+            });
+            //action
+            promptDeleteItems(context, () {
+              SQLHelper().deleteItem(selectedNoteIds.toList());
+              clear();
+              Navigator.pop(context);
+            });
+          },
+          (details) {
+            setState(() {
+              isClicked = !isClicked;
+            });
+            //action
+            promptDeleteItems(context, () {
+              SQLHelper().deleteItem(selectedNoteIds.toList());
+              clear();
+              Navigator.pop(context);
+            });
+          },
+        ),
+        btnLongPressedItemHomeSelectAll,
+      ],
+    ),
+  );
 }

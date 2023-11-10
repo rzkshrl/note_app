@@ -192,6 +192,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
           List<Map<String, dynamic>>.from(notesList);
       notesData
           .sort((a, b) => (b[constants.date]).compareTo(a[constants.date]));
+      notesData.sort((a, b) => (b[constants.pin]).compareTo(a[constants.pin]));
       return notesData;
     } catch (e) {
       debugPrint('$e');
@@ -278,8 +279,98 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
           floatingActionButton:
               isLongPressed ? Container() : showFAB(cAniFAB2, cAniFAB),
           bottomNavigationBar: isLongPressed
-              ? showSelectionBottomBar(context, selectedItems, selectedNoteIds,
-                  notesData, isClicked, allSelectedItems, isLongPressed)
+              ? showSelectionBottomBar(
+                  context,
+                  selectedItems,
+                  selectedNoteIds,
+                  notesData,
+                  isClicked,
+                  allSelectedItems,
+                  isLongPressed,
+                  setState,
+                  clear,
+                  btnLongPressedItemHomeSelectAll(
+                    allSelectedItems,
+                    context,
+                    PhosphorIcon(
+                      !allSelectedItems
+                          ? PhosphorIcons.regular.checkSquare
+                          : PhosphorIcons.fill.checkSquare,
+                      color: !allSelectedItems
+                          ? Theme.of(context).iconTheme.color
+                          : Theme.of(context)
+                              .floatingActionButtonTheme
+                              .backgroundColor,
+                    ),
+                    () {
+                      setState(() {
+                        isClicked = !isClicked;
+                      });
+                      Future.delayed(const Duration(milliseconds: 100), () {
+                        setState(() {
+                          isClicked = false;
+                        });
+                      });
+                      //action
+                      allSelectedItems = !allSelectedItems;
+                      if (allSelectedItems) {
+                        for (var item in notesData) {
+                          selectedNoteIds.add(item[constants.id]);
+                        }
+                        selectedItems = List<bool>.generate(
+                            selectedNoteIds.length, (index) => false);
+                        for (var i = 0; i < selectedItems.length; i++) {
+                          selectedItems[i] = true;
+                        }
+                        debugPrint('select all');
+                        debugPrint('selectedNoteIds : $selectedNoteIds');
+                      } else if (!allSelectedItems) {
+                        for (var item in notesData) {
+                          selectedNoteIds.remove(item[constants.id]);
+                        }
+                        selectedItems = List<bool>.generate(
+                            selectedNoteIds.length, (index) => false);
+                        for (var i = 0; i < selectedItems.length; i++) {
+                          selectedItems[i] = false;
+                          allSelectedItems = false;
+                          debugPrint('deselect all');
+                          debugPrint('selectedNoteIds : $selectedNoteIds');
+                        }
+                      }
+                    },
+                    (details) {
+                      setState(() {
+                        isClicked = !isClicked;
+                      });
+                      //action
+                      allSelectedItems = !allSelectedItems;
+                      if (allSelectedItems) {
+                        for (var item in notesData) {
+                          selectedNoteIds.add(item[constants.id]);
+                        }
+                        selectedItems = List<bool>.generate(
+                            selectedNoteIds.length, (index) => false);
+                        for (var i = 0; i < selectedItems.length; i++) {
+                          selectedItems[i] = true;
+                        }
+                        debugPrint('select all');
+                        debugPrint('selectedNoteIds : $selectedNoteIds');
+                      } else if (!allSelectedItems) {
+                        for (var item in notesData) {
+                          selectedNoteIds.remove(item[constants.id]);
+                        }
+                        selectedItems = List<bool>.generate(
+                            selectedNoteIds.length, (index) => false);
+                        for (var i = 0; i < selectedItems.length; i++) {
+                          selectedItems[i] = false;
+                          allSelectedItems = false;
+                          debugPrint('deselect all');
+                          debugPrint('selectedNoteIds : $selectedNoteIds');
+                        }
+                      }
+                    },
+                  ),
+                )
               : null,
           body: FutureBuilder<List<Map<String, dynamic>>>(
               future: readDataAll(),
@@ -665,16 +756,42 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
                                                         SizedBox(
                                                           height: 0.55.h,
                                                         ),
-                                                        Text(
-                                                          date,
-                                                          style: Theme.of(
-                                                                  context)
-                                                              .textTheme
-                                                              .displayMedium!
-                                                              .copyWith(
-                                                                  fontSize:
-                                                                      12.sp),
-                                                        ),
+                                                        if (itemNotes[constants
+                                                                .pin] ==
+                                                            1)
+                                                          Row(
+                                                            children: [
+                                                              Icon(
+                                                                PhosphorIcons
+                                                                    .regular
+                                                                    .pushPin,
+                                                                size: 3.w,
+                                                                color: blue,
+                                                              ),
+                                                              SizedBox(
+                                                                width: 1.5.w,
+                                                              ),
+                                                              Text(
+                                                                date,
+                                                                style: Theme.of(
+                                                                        context)
+                                                                    .textTheme
+                                                                    .displayMedium!
+                                                                    .copyWith(
+                                                                        fontSize:
+                                                                            12.sp),
+                                                              ),
+                                                            ],
+                                                          )
+                                                        else
+                                                          Text(date,
+                                                              style: Theme.of(
+                                                                      context)
+                                                                  .textTheme
+                                                                  .displayMedium!
+                                                                  .copyWith(
+                                                                      fontSize:
+                                                                          12.sp))
                                                       ],
                                                     ),
                                                     AnimatedBuilder(

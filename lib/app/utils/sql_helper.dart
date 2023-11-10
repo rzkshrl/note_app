@@ -55,48 +55,35 @@ class SQLHelper {
     return update;
   }
 
-  Future<int> pinItem(bool pin, int id) async {
+  Future<int> pinItem(bool pin, List id) async {
     final db = await SQLHelper().db();
     int convertPin = pin ? 1 : 0;
     final data = {
       constants.pin: convertPin,
     };
     final update = db.update(constants.tableName, data,
-        where: 'id = ?',
-        whereArgs: [id],
+        where: "id IN (${id.join(', ')})",
         conflictAlgorithm: ConflictAlgorithm.replace);
     return update;
   }
 
-  Future<int> favoriteItem(bool favorite, int id) async {
+  Future<int> favoriteItem(bool favorite, List id) async {
     final db = await SQLHelper().db();
     int convertFavorite = favorite ? 1 : 0;
     final data = {
       constants.favorite: convertFavorite,
     };
     final update = db.update(constants.tableName, data,
-        where: 'id = ?',
-        whereArgs: [id],
-        conflictAlgorithm: ConflictAlgorithm.replace);
-    return update;
-  }
-
-  Future<int> updateItemWithoutDate(String title, String text, int id) async {
-    final db = await SQLHelper().db();
-    final data = {
-      constants.title: title,
-      constants.text: text,
-    };
-    final update = db.update(constants.tableName, data,
-        where: 'id = ?',
-        whereArgs: [id],
+        where: "id IN (${id.join(', ')})" 'id = ?',
         conflictAlgorithm: ConflictAlgorithm.replace);
     return update;
   }
 
   Future<List<Map<String, dynamic>>> getAllItem() async {
     final db = await SQLHelper().db();
-    return db.query(constants.tableName, orderBy: 'id');
+    return db.query(
+      constants.tableName,
+    );
   }
 
   Future<void> deleteItem(List id) async {

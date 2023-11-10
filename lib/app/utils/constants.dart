@@ -6,6 +6,6 @@ class Constants {
   String pin = 'pin';
   String favorite = 'favorite';
   String id = 'id';
-  int dbVersion = 1;
+  int dbVersion = 2;
   String dbName = 'notesapp.db';
 }
