@@ -12,7 +12,9 @@ class SQLHelper {
       ${constants.id} INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
       ${constants.title} TEXT,
       ${constants.text} TEXT,
-      ${constants.date} TEXT NOT NULL
+      ${constants.date} TEXT NOT NULL,
+      ${constants.pin} INTEGER,
+      ${constants.favorite} INTEGER
     )""");
   }
 
@@ -23,12 +25,15 @@ class SQLHelper {
     });
   }
 
-  Future<int> createItem(String title, String text, String timestamp) async {
+  Future<int> createItem(String title, String text, String timestamp, int pin,
+      int favorite) async {
     final db = await SQLHelper().db();
     final data = {
       constants.title: title,
       constants.text: text,
-      constants.date: timestamp
+      constants.date: timestamp,
+      constants.pin: pin,
+      constants.favorite: favorite,
     };
     final id = await db.insert(constants.tableName, data,
         conflictAlgorithm: ConflictAlgorithm.replace);
@@ -42,6 +47,32 @@ class SQLHelper {
       constants.title: title,
       constants.text: text,
       constants.date: timestamp
+    };
+    final update = db.update(constants.tableName, data,
+        where: 'id = ?',
+        whereArgs: [id],
+        conflictAlgorithm: ConflictAlgorithm.replace);
+    return update;
+  }
+
+  Future<int> pinItem(bool pin, int id) async {
+    final db = await SQLHelper().db();
+    int convertPin = pin ? 1 : 0;
+    final data = {
+      constants.pin: convertPin,
+    };
+    final update = db.update(constants.tableName, data,
+        where: 'id = ?',
+        whereArgs: [id],
+        conflictAlgorithm: ConflictAlgorithm.replace);
+    return update;
+  }
+
+  Future<int> favoriteItem(bool favorite, int id) async {
+    final db = await SQLHelper().db();
+    int convertFavorite = favorite ? 1 : 0;
+    final data = {
+      constants.favorite: convertFavorite,
     };
     final update = db.update(constants.tableName, data,
         where: 'id = ?',
@@ -66,15 +97,6 @@ class SQLHelper {
   Future<List<Map<String, dynamic>>> getAllItem() async {
     final db = await SQLHelper().db();
     return db.query(constants.tableName, orderBy: 'id');
-  }
-
-  Future<List<Map<String, dynamic>>> getItemBySearch(String search) async {
-    final db = await SQLHelper().db();
-
-    return db.query(constants.tableName,
-        where: "title LIKE ? OR text LIKE ?",
-        orderBy: 'title ASC',
-        whereArgs: [search]);
   }
 
   Future<void> deleteItem(List id) async {

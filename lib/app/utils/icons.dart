@@ -5,7 +5,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 Widget iconUndo(BuildContext context, bool isTextEmpty) {
   if (isTextEmpty) {
-    return FaIcon(FontAwesomeIcons.undoAlt);
+    return const FaIcon(FontAwesomeIcons.undoAlt);
   } else {
     return FaIcon(
       FontAwesomeIcons.undoAlt,
@@ -16,7 +16,7 @@ Widget iconUndo(BuildContext context, bool isTextEmpty) {
 
 Widget iconRedo(BuildContext context, bool isTextEmpty) {
   if (isTextEmpty) {
-    return FaIcon(FontAwesomeIcons.redoAlt);
+    return const FaIcon(FontAwesomeIcons.redoAlt);
   } else {
     return FaIcon(
       FontAwesomeIcons.redoAlt,

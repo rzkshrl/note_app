@@ -1,4 +1,4 @@
-// ignore_for_file: deprecated_member_use, unnecessary_string_interpolations
+// ignore_for_file: deprecated_member_use, unnecessary_string_interpolations, use_build_context_synchronously
 
 import 'dart:async';
 
@@ -38,6 +38,8 @@ class _TextEditorState extends State<TextEditor> {
 
   var titleTextController = TextEditingController();
   var textTextController = TextEditingController();
+  var undoController = UndoHistoryController(
+      value: const UndoHistoryValue(canRedo: true, canUndo: true));
 
   bool isUndoEnabled = false;
   bool isRedoEnabled = false;
@@ -45,7 +47,11 @@ class _TextEditorState extends State<TextEditor> {
   List<String> noteTextChanges = [];
 
   void handleChanges() {
-    noteTextChanges = List.from(textTextController.text.split(' '));
+    if (widget.args[0] == 'new') {
+      noteTextChanges = List.from(textTextController.text.split(' '));
+    } else {
+      noteTextChanges = List.from(widget.args[1][2].split(' '));
+    }
   }
 
   void handleTitleTextChange() {
@@ -105,7 +111,8 @@ class _TextEditorState extends State<TextEditor> {
         });
         if (widget.args[0] == 'new') {
           try {
-            await SQLHelper().createItem(noteTitle, noteText, dateTimeNow);
+            await SQLHelper()
+                .createItem(noteTitle, noteText, dateTimeNow, 0, 0);
             Navigator.of(context).pushReplacementNamed(homeViewRoute);
           } catch (e) {
             SnackBarService.showSnackBar(
@@ -140,6 +147,7 @@ class _TextEditorState extends State<TextEditor> {
     }
   }
 
+  // save notes to sqlite databases
   Future<void> saveNotes() async {
     final dateTimeNow = DateTime.now().toIso8601String();
     if (noteTitle.isEmpty) {
@@ -156,7 +164,8 @@ class _TextEditorState extends State<TextEditor> {
         });
         if (widget.args[0] == 'new') {
           try {
-            await SQLHelper().createItem(noteTitle, noteText, dateTimeNow);
+            await SQLHelper()
+                .createItem(noteTitle, noteText, dateTimeNow, 0, 0);
           } catch (e) {
             SnackBarService.showSnackBar(
               content: const Text("Can't save note."),
@@ -256,38 +265,60 @@ class _TextEditorState extends State<TextEditor> {
                       btnToolIcon(isUndoEnabled, context,
                           iconUndo(context, isUndoEnabled), () {
                         setState(() {
-                          if (textTextController.text == '') {
-                            return;
+                          if (widget.args[0] == 'new') {
+                            if (textTextController.text == '') {
+                              return;
+                            } else {
+                              changes.undo();
+                            }
                           } else {
-                            changes.undo();
+                            undoController.undo();
                           }
                         });
                       }, (details) {
                         setState(() {
-                          if (textTextController.text == '') {
-                            return;
+                          if (widget.args[0] == 'new') {
+                            if (textTextController.text == '') {
+                              return;
+                            } else {
+                              changes.undo();
+                            }
                           } else {
-                            changes.undo();
+                            undoController.undo();
                           }
                         });
                       }),
                       btnToolIcon(isRedoEnabled, context,
                           iconRedo(context, isRedoEnabled), () {
                         setState(() {
-                          changes.redo();
-                          if (textTextController.text == '') {
-                            return;
+                          if (widget.args[0] == 'new') {
+                            changes.redo();
+                            if (textTextController.text == '') {
+                              return;
+                            } else {
+                              isUndoEnabled = true;
+                            }
                           } else {
-                            isUndoEnabled = true;
+                            undoController.redo();
                           }
                         });
                       }, (details) {
                         setState(() {
-                          changes.redo();
-                          if (textTextController.text == '') {
-                            return;
+                          if (widget.args[0] == 'new') {
+                            changes.redo();
+                            if (textTextController.text == '') {
+                              return;
+                            } else {
+                              isUndoEnabled = true;
+                            }
                           } else {
-                            isUndoEnabled = true;
+                            if (textTextController.text == widget.args[1][2]) {
+                              return;
+                            } else {
+                              isUndoEnabled = true;
+                              undoController.redo();
+                              undoController.onRedo.addListener(() {});
+                            }
                           }
                         });
                       }),
@@ -370,6 +401,7 @@ class _TextEditorState extends State<TextEditor> {
                             EdgeInsets.only(left: 6.w, right: 6.w, bottom: 2.h),
                         child: TextFormField(
                           controller: textTextController,
+                          undoController: undoController,
                           onTap: () {
                             if (!currentFocus().hasPrimaryFocus) {
                               currentFocus().unfocus();
@@ -383,16 +415,18 @@ class _TextEditorState extends State<TextEditor> {
                           onChanged: (text) {
                             setState(() {
                               if (textTextController.text == '') {
-                                isUndoEnabled = false;
-                                isRedoEnabled = false;
+                                if (widget.args[0] == 'new') {
+                                  isUndoEnabled = false;
+                                  isRedoEnabled = false;
+                                } else {
+                                  isUndoEnabled = true;
+                                  isRedoEnabled = true;
+                                }
                               } else {
                                 isUndoEnabled = true;
                                 isRedoEnabled = true;
                               }
 
-                              if (widget.args[0] == 'update') {
-                                noteTextOnChange = text;
-                              }
                               handleChanges();
 
                               changes.addGroup([
@@ -402,20 +436,36 @@ class _TextEditorState extends State<TextEditor> {
                                     textTextController.text = text;
                                   },
                                   (oldValue) {
-                                    textTextController.text = oldValue;
-                                    if (oldValue.length - 1 ==
-                                            noteTextChanges.first.length ||
-                                        oldValue.length ==
-                                            noteTextChanges.first.length) {
-                                      textTextController.text = '';
-                                      isUndoEnabled = false;
+                                    if (widget.args[0] == 'new') {
+                                      textTextController.text = oldValue;
+                                      if (oldValue.length - 1 ==
+                                              noteTextChanges.first.length ||
+                                          oldValue.length ==
+                                              noteTextChanges.first.length) {
+                                        textTextController.text = '';
+                                        isUndoEnabled = false;
+                                      }
                                       debugPrint(
                                           'oldValue.length - 1 : ${oldValue.length - 1}');
-                                      debugPrint('oldValue : ${oldValue}');
+                                      debugPrint('oldValue : $oldValue');
                                       debugPrint(
                                           'noteTextChanges : ${noteTextChanges.first}');
                                       debugPrint(
                                           'noteTextChanges.first.length : ${noteTextChanges.first.length}');
+                                    } else {
+                                      textTextController.text = oldValue;
+                                      if (oldValue.length ==
+                                          textTextController.text.length) {
+                                        isUndoEnabled = true;
+                                      }
+                                      debugPrint(
+                                          'oldValue.length : ${oldValue.length}');
+                                      debugPrint('oldValue : $oldValue');
+                                      debugPrint(
+                                          'textTextController : ${textTextController.text}');
+
+                                      debugPrint(
+                                          'textTextController.length : ${textTextController.text.length}');
                                     }
                                   },
                                 ),

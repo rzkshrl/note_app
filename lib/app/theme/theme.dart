@@ -14,89 +14,102 @@ Color red = HexColor('#c04c4c');
 
 class NoteAppTheme {
   static ThemeData darkTheme = ThemeData(
-    scaffoldBackgroundColor: dark,
-    useMaterial3: true,
-    appBarTheme: AppBarTheme(
-      elevation: 0,
-      color: dark,
-      iconTheme: IconThemeData(color: light),
-      systemOverlayStyle: SystemUiOverlayStyle(
-        statusBarBrightness: Brightness.light,
-        statusBarIconBrightness: Brightness.light,
-        statusBarColor: dark,
+      scaffoldBackgroundColor: dark,
+      useMaterial3: true,
+      appBarTheme: AppBarTheme(
+        elevation: 0,
+        color: dark,
+        iconTheme: IconThemeData(color: light),
+        systemOverlayStyle: SystemUiOverlayStyle(
+          statusBarBrightness: Brightness.light,
+          statusBarIconBrightness: Brightness.light,
+          statusBarColor: dark,
+        ),
       ),
-    ),
-    iconTheme: IconThemeData(
-      color: light,
-    ),
-    checkboxTheme: CheckboxThemeData(
-      fillColor: MaterialStateProperty.resolveWith((states) {
-        if (states.contains(MaterialState.selected)) {
-          return blue;
-        }
-        return Colors.transparent;
-      }),
-      checkColor: MaterialStateProperty.resolveWith((states) {
-        if (states.contains(MaterialState.selected)) {
-          return light;
-        }
-        return light.withOpacity(0.5);
-      }),
-      side: BorderSide(
-        color: light.withOpacity(0.5),
-      ),
-    ),
-    floatingActionButtonTheme: FloatingActionButtonThemeData(
-      backgroundColor: blue,
-      foregroundColor: light,
-    ),
-    bottomSheetTheme:
-        const BottomSheetThemeData(modalBackgroundColor: Colors.transparent),
-    popupMenuTheme: PopupMenuThemeData(
-      color: greyDark2,
-      surfaceTintColor: Colors.transparent,
-      textStyle: TextStyle(color: light, fontWeight: FontWeight.w400),
-    ),
-    cardColor: greyDark,
-    canvasColor: greyDark2,
-    textSelectionTheme: TextSelectionThemeData(
-      cursorColor: blue,
-      selectionColor: blue.withOpacity(0.5),
-      selectionHandleColor: blue.withOpacity(0.8),
-    ),
-    brightness: Brightness.dark,
-    textTheme: TextTheme(
-      headlineLarge: TextStyle(
+      iconTheme: IconThemeData(
         color: light,
       ),
-      headlineMedium: TextStyle(
-        color: light,
+      checkboxTheme: CheckboxThemeData(
+        fillColor: MaterialStateProperty.resolveWith((states) {
+          if (states.contains(MaterialState.selected)) {
+            return blue;
+          }
+          return Colors.transparent;
+        }),
+        checkColor: MaterialStateProperty.resolveWith((states) {
+          if (states.contains(MaterialState.selected)) {
+            return light;
+          }
+          return light.withOpacity(0.5);
+        }),
+        side: BorderSide(
+          color: light.withOpacity(0.5),
+        ),
       ),
-      headlineSmall: TextStyle(
-        color: light,
+      floatingActionButtonTheme: FloatingActionButtonThemeData(
+        backgroundColor: blue,
+        foregroundColor: light,
       ),
-      displayLarge: TextStyle(
-        color: grey,
-        fontWeight: FontWeight.normal,
+      bottomSheetTheme:
+          const BottomSheetThemeData(modalBackgroundColor: Colors.transparent),
+      popupMenuTheme: PopupMenuThemeData(
+        color: greyDark2,
+        surfaceTintColor: Colors.transparent,
+        textStyle: TextStyle(color: light, fontWeight: FontWeight.w400),
       ),
-      displayMedium: TextStyle(
-        color: light.withOpacity(0.4),
-        fontWeight: FontWeight.normal,
+      cardColor: greyDark,
+      canvasColor: greyDark2,
+      textSelectionTheme: TextSelectionThemeData(
+        cursorColor: blue,
+        selectionColor: blue.withOpacity(0.5),
+        selectionHandleColor: blue.withOpacity(0.8),
       ),
-      displaySmall: TextStyle(
-        color: greyDark,
-        fontWeight: FontWeight.normal,
+      brightness: Brightness.dark,
+      textTheme: TextTheme(
+        headlineLarge: TextStyle(
+          color: light,
+        ),
+        headlineMedium: TextStyle(
+          color: light,
+        ),
+        headlineSmall: TextStyle(
+          color: light,
+        ),
+        displayLarge: TextStyle(
+          color: grey,
+          fontWeight: FontWeight.normal,
+        ),
+        displayMedium: TextStyle(
+          color: light.withOpacity(0.4),
+          fontWeight: FontWeight.normal,
+        ),
+        displaySmall: TextStyle(
+          color: greyDark,
+          fontWeight: FontWeight.normal,
+        ),
+        titleLarge: TextStyle(
+          color: light.withOpacity(0.7),
+          fontWeight: FontWeight.normal,
+        ),
+        titleMedium: TextStyle(
+          color: blue,
+          fontWeight: FontWeight.normal,
+        ),
       ),
-      titleLarge: TextStyle(
-        color: light.withOpacity(0.7),
-        fontWeight: FontWeight.normal,
-      ),
-      titleMedium: TextStyle(
-        color: blue,
-        fontWeight: FontWeight.normal,
-      ),
-    ),
-  );
+      scrollbarTheme: ScrollbarThemeData(
+        thumbVisibility: MaterialStateProperty.resolveWith((states) {
+          return true;
+        }),
+        trackVisibility: MaterialStateProperty.resolveWith((states) {
+          return true;
+        }),
+        thickness: MaterialStateProperty.resolveWith((states) {
+          return 25;
+        }),
+        minThumbLength: 20,
+        interactive: true,
+        radius: const Radius.circular(20),
+      ));
 
   static ThemeData lightTheme = ThemeData(
     scaffoldBackgroundColor: light2,

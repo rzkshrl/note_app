@@ -4,10 +4,13 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:note_app/app/routes/routing_constant.dart';
+import 'package:note_app/app/theme/theme.dart';
 import 'package:note_app/app/utils/floatingactionbutton.dart';
+import 'package:note_app/app/utils/selectionbottomnavbar.dart';
 import 'package:note_app/app/utils/sql_helper.dart';
 import 'package:note_app/app/utils/textfield.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
@@ -72,6 +75,15 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
 
   var searchTextController = TextEditingController();
   bool isSearch = false;
+
+  void resetAnimationOnScroll() {
+    for (int index in cAniItemNotes.keys) {
+      cAniItemNotes[index]!.reverse();
+      if (!isLongPressed) {
+        selectedItems[index] = false;
+      }
+    }
+  }
 
   @override
   void initState() {
@@ -238,15 +250,20 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
     return '${count.toString()} item';
   }
 
+  // clear list and revert bool
+  void clear() {
+    setState(() {
+      isLongPressed = false;
+      selectedItems.clear();
+      selectedNoteIds.clear();
+      allSelectedItems = false;
+    });
+  }
+
   // callback from willpop/back button
   Future<bool> onWillPop() async {
     if (isLongPressed == true) {
-      setState(() {
-        isLongPressed = false;
-        selectedItems.clear();
-        selectedNoteIds.clear();
-        allSelectedItems = false;
-      });
+      clear();
       return false;
     } else {
       return true;
@@ -261,171 +278,8 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
           floatingActionButton:
               isLongPressed ? Container() : showFAB(cAniFAB2, cAniFAB),
           bottomNavigationBar: isLongPressed
-              ? Container(
-                  height: 6.h,
-                  decoration: BoxDecoration(
-                      color: Theme.of(context).scaffoldBackgroundColor),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      btnLongPressedItemHome(
-                        selectedItems,
-                        context,
-                        PhosphorIcon(
-                          PhosphorIcons.regular.copy,
-                          color: selectedItems.contains(true)
-                              ? Theme.of(context).iconTheme.color
-                              : Theme.of(context)
-                                  .iconTheme
-                                  .color!
-                                  .withOpacity(0.2),
-                        ),
-                        'Move',
-                        () {
-                          setState(() {
-                            isClicked = !isClicked;
-                          });
-                          Future.delayed(const Duration(milliseconds: 100), () {
-                            setState(() {
-                              isClicked = false;
-                            });
-                          });
-                        },
-                        (details) {
-                          setState(() {
-                            isClicked = !isClicked;
-                          });
-                        },
-                      ),
-                      btnLongPressedItemHome(
-                        selectedItems,
-                        context,
-                        PhosphorIcon(
-                          PhosphorIcons.regular.trashSimple,
-                          color: selectedItems.contains(true)
-                              ? Theme.of(context).iconTheme.color
-                              : Theme.of(context)
-                                  .iconTheme
-                                  .color!
-                                  .withOpacity(0.2),
-                        ),
-                        'Delete',
-                        () {
-                          setState(() {
-                            isClicked = !isClicked;
-                          });
-                          Future.delayed(const Duration(milliseconds: 100), () {
-                            setState(() {
-                              isClicked = false;
-                            });
-                          });
-                          promptDeleteItems(context, () {
-                            SQLHelper().deleteItem(selectedNoteIds.toList());
-                            setState(() {
-                              isLongPressed = false;
-                              selectedItems.clear();
-                              selectedNoteIds.clear();
-                            });
-                            Navigator.pop(context);
-                          });
-                        },
-                        (details) {
-                          setState(() {
-                            isClicked = !isClicked;
-                          });
-                          promptDeleteItems(context, () {
-                            SQLHelper().deleteItem(selectedNoteIds.toList());
-                            setState(() {
-                              isLongPressed = false;
-                              selectedItems.clear();
-                              selectedNoteIds.clear();
-                            });
-                            Navigator.pop(context);
-                          });
-                        },
-                      ),
-                      btnLongPressedItemHomeSelectAll(
-                        allSelectedItems,
-                        context,
-                        PhosphorIcon(
-                          !allSelectedItems
-                              ? PhosphorIcons.regular.checkSquare
-                              : PhosphorIcons.fill.checkSquare,
-                          color: !allSelectedItems
-                              ? Theme.of(context).iconTheme.color
-                              : Theme.of(context)
-                                  .floatingActionButtonTheme
-                                  .backgroundColor,
-                        ),
-                        () {
-                          setState(() {
-                            isClicked = !isClicked;
-                          });
-                          Future.delayed(const Duration(milliseconds: 100), () {
-                            setState(() {
-                              isClicked = false;
-                            });
-                          });
-                          allSelectedItems = !allSelectedItems;
-                          if (allSelectedItems) {
-                            for (var item in notesData) {
-                              selectedNoteIds.add(item[constants.id]);
-                            }
-                            selectedItems = List<bool>.generate(
-                                selectedNoteIds.length, (index) => false);
-                            for (var i = 0; i < selectedItems.length; i++) {
-                              selectedItems[i] = true;
-                            }
-                            debugPrint('select all');
-                            debugPrint('selectedNoteIds : $selectedNoteIds');
-                          } else if (!allSelectedItems) {
-                            for (var item in notesData) {
-                              selectedNoteIds.remove(item[constants.id]);
-                            }
-                            selectedItems = List<bool>.generate(
-                                selectedNoteIds.length, (index) => false);
-                            for (var i = 0; i < selectedItems.length; i++) {
-                              selectedItems[i] = false;
-                              allSelectedItems = false;
-                              debugPrint('deselect all');
-                              debugPrint('selectedNoteIds : $selectedNoteIds');
-                            }
-                          }
-                        },
-                        (details) {
-                          setState(() {
-                            isClicked = !isClicked;
-                          });
-                          allSelectedItems = !allSelectedItems;
-                          if (allSelectedItems) {
-                            for (var item in notesData) {
-                              selectedNoteIds.add(item[constants.id]);
-                            }
-                            selectedItems = List<bool>.generate(
-                                selectedNoteIds.length, (index) => false);
-                            for (var i = 0; i < selectedItems.length; i++) {
-                              selectedItems[i] = true;
-                            }
-                            debugPrint('select all');
-                            debugPrint('selectedNoteIds : $selectedNoteIds');
-                          } else if (!allSelectedItems) {
-                            for (var item in notesData) {
-                              selectedNoteIds.remove(item[constants.id]);
-                            }
-                            selectedItems = List<bool>.generate(
-                                selectedNoteIds.length, (index) => false);
-                            for (var i = 0; i < selectedItems.length; i++) {
-                              selectedItems[i] = false;
-                              allSelectedItems = false;
-                              debugPrint('deselect all');
-                              debugPrint('selectedNoteIds : $selectedNoteIds');
-                            }
-                          }
-                        },
-                      ),
-                    ],
-                  ),
-                )
+              ? showSelectionBottomBar(context, selectedItems, selectedNoteIds,
+                  notesData, isClicked, allSelectedItems, isLongPressed)
               : null,
           body: FutureBuilder<List<Map<String, dynamic>>>(
               future: readDataAll(),
@@ -445,26 +299,17 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
                 notesData = snapshot.data!;
                 return GestureDetector(
                   onVerticalDragDown: (details) {
-                    for (int index in cAniItemNotes.keys) {
-                      cAniItemNotes[index]!.reverse();
-                      if (!isLongPressed) {
-                        selectedItems[index] = false;
-                      }
-                    }
+                    resetAnimationOnScroll();
                   },
                   onVerticalDragEnd: (details) {
-                    for (int index in cAniItemNotes.keys) {
-                      cAniItemNotes[index]!.reverse();
-                      if (!isLongPressed) {
-                        selectedItems[index] = false;
-                      }
-                    }
+                    resetAnimationOnScroll();
                   },
                   child: CustomScrollView(
                     physics: const BouncingScrollPhysics(),
                     controller: scrollController,
                     slivers: [
                       SliverAppBar(
+                        automaticallyImplyLeading: false,
                         backgroundColor:
                             Theme.of(context).scaffoldBackgroundColor,
                         surfaceTintColor:
@@ -483,12 +328,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
                                     children: [
                                       IconButton(
                                         onPressed: () {
-                                          setState(() {
-                                            isLongPressed = false;
-                                            selectedItems.clear();
-                                            selectedNoteIds.clear();
-                                            allSelectedItems = false;
-                                          });
+                                          clear();
                                         },
                                         icon: PhosphorIcon(
                                             PhosphorIcons.regular.x),
@@ -574,7 +414,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
                                           BorderRadius.circular(12.0)),
                                   itemBuilder: (context) => [
                                         buildPopupMenuItem(
-                                            'Grid view',
+                                            'Profile',
                                             1,
                                             Theme.of(context)
                                                 .popupMenuTheme
@@ -606,34 +446,6 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
                                             );
                                           });
                                         }),
-                                        CustomPopupMenuDivider(
-                                          color: Theme.of(context)
-                                              .iconTheme
-                                              .color!
-                                              .withOpacity(0.3),
-                                        ),
-                                        buildPopupMenuItem(
-                                            'Sort',
-                                            3,
-                                            Theme.of(context)
-                                                .popupMenuTheme
-                                                .textStyle!
-                                                .copyWith(fontSize: 10.sp),
-                                            () {}),
-                                        CustomPopupMenuDivider(
-                                          color: Theme.of(context)
-                                              .iconTheme
-                                              .color!
-                                              .withOpacity(0.3),
-                                        ),
-                                        buildPopupMenuItem(
-                                            'Settings',
-                                            4,
-                                            Theme.of(context)
-                                                .popupMenuTheme
-                                                .textStyle!
-                                                .copyWith(fontSize: 10.sp),
-                                            () {}),
                                       ]),
                             ]),
                         flexibleSpace: FlexibleSpaceBar(
@@ -706,7 +518,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
                                       );
                                       isItemClicked[index] = false;
                                     }
-
+                                    // set default value : false for selectedItems
                                     if (selectedItems.length <= index) {
                                       selectedItems.add(false);
                                     }
@@ -867,54 +679,75 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
                                                     ),
                                                     AnimatedBuilder(
                                                       animation:
-                                                          cAniItemDeleteNotes,
+                                                          cAniItemNotes[index]!,
                                                       child: isLongPressed
-                                                          ? Checkbox(
-                                                              value:
-                                                                  selectedItems[
-                                                                      index],
-                                                              onChanged:
-                                                                  (value) {
-                                                                setState(() {
-                                                                  selectedItems[
-                                                                          index] =
-                                                                      value!;
-                                                                  if (value ==
-                                                                      true) {
-                                                                    selectedNoteIds.add(
-                                                                        itemNotes[
-                                                                            constants.id]);
-                                                                  } else {
-                                                                    selectedNoteIds
-                                                                        .removeWhere((e) =>
+                                                          ? AnimatedBuilder(
+                                                              animation:
+                                                                  cAniItemNotes[
+                                                                      index]!,
+                                                              builder: (
+                                                                context,
+                                                                child,
+                                                              ) {
+                                                                return SlideTransition(
+                                                                  position: Tween<
+                                                                      Offset>(
+                                                                    begin: Offset
+                                                                        .zero,
+                                                                    end: const Offset(
+                                                                        -0.05,
+                                                                        0.0),
+                                                                  ).animate(
+                                                                    cAniItemNotes[
+                                                                        index]!,
+                                                                  ),
+                                                                  child: child,
+                                                                );
+                                                              },
+                                                              child: Checkbox(
+                                                                  value:
+                                                                      selectedItems[
+                                                                          index],
+                                                                  onChanged:
+                                                                      (value) {
+                                                                    setState(
+                                                                        () {
+                                                                      selectedItems[
+                                                                              index] =
+                                                                          value!;
+                                                                      if (value ==
+                                                                          true) {
+                                                                        selectedNoteIds
+                                                                            .add(itemNotes[constants.id]);
+                                                                      } else {
+                                                                        selectedNoteIds.removeWhere((e) =>
                                                                             e ==
                                                                             itemNotes[constants.id]);
-                                                                  }
-                                                                  debugPrint(
-                                                                      'ini selectedNoteIds : $selectedNoteIds');
-                                                                  debugPrint(
-                                                                      'ini selectedItems : $selectedItems');
-                                                                  cAniItemNotes[
-                                                                          index]!
-                                                                      .forward()
-                                                                      .then((value) =>
-                                                                          Future.delayed(const Duration(milliseconds: 60)).then((value) =>
-                                                                              cAniItemNotes[index]!.reverse()));
-                                                                });
-                                                              })
+                                                                      }
+                                                                      debugPrint(
+                                                                          'ini selectedNoteIds : $selectedNoteIds');
+                                                                      debugPrint(
+                                                                          'ini selectedItems : $selectedItems');
+                                                                      cAniItemNotes[
+                                                                              index]!
+                                                                          .forward()
+                                                                          .then((value) =>
+                                                                              Future.delayed(const Duration(milliseconds: 60)).then((value) => cAniItemNotes[index]!.reverse()));
+                                                                    });
+                                                                  }),
+                                                            )
                                                           : const SizedBox(),
                                                       builder: (
                                                         context,
                                                         child,
                                                       ) {
-                                                        return SlideTransition(
-                                                          position:
-                                                              Tween<Offset>(
-                                                            begin: Offset.zero,
-                                                            end: const Offset(
-                                                                1.5, 0.0),
-                                                          ).animate(
-                                                            cAniItemDeleteNotes,
+                                                        return ScaleTransition(
+                                                          scale: Tween(
+                                                                  begin: 1.0,
+                                                                  end: 0.5)
+                                                              .animate(
+                                                            cAniItemNotes[
+                                                                index]!,
                                                           ),
                                                           child: child,
                                                           // scale: Tween(begin: 1.0, end: 0.95)
