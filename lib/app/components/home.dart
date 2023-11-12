@@ -20,6 +20,7 @@ import '../utils/button.dart';
 import '../utils/constants.dart';
 import '../utils/flexiblespacebar.dart';
 import '../utils/homeandselectiontoggle.dart';
+import '../utils/icons.dart';
 import '../utils/modalsheet.dart';
 import '../utils/popupmenu.dart';
 
@@ -190,8 +191,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
       List<Map> notesList = await SQLHelper().getAllItem();
       List<Map<String, dynamic>> notesData =
           List<Map<String, dynamic>>.from(notesList);
-      notesData
-          .sort((a, b) => (b[constants.date]).compareTo(a[constants.date]));
+
       notesData.sort((a, b) => (b[constants.pin]).compareTo(a[constants.pin]));
       return notesData;
     } catch (e) {
@@ -487,57 +487,8 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
                                   )
                               else
                                 const SizedBox(),
-                              PopupMenuButton<dynamic>(
-                                  tooltip: '',
-                                  icon: ClipOval(
-                                    child: Material(
-                                      color: Colors.transparent,
-                                      child: Icon(
-                                        Icons.more_vert_rounded,
-                                        color:
-                                            Theme.of(context).iconTheme.color,
-                                      ),
-                                    ),
-                                  ),
-                                  offset: Offset(-2.5.w, 5.5.h),
-                                  shape: RoundedRectangleBorder(
-                                      borderRadius:
-                                          BorderRadius.circular(12.0)),
-                                  itemBuilder: (context) => [
-                                        buildPopupMenuItem(
-                                            'Profile',
-                                            1,
-                                            Theme.of(context)
-                                                .popupMenuTheme
-                                                .textStyle!
-                                                .copyWith(fontSize: 10.sp),
-                                            () {}),
-                                        CustomPopupMenuDivider(
-                                          color: Theme.of(context)
-                                              .iconTheme
-                                              .color!
-                                              .withOpacity(0.3),
-                                        ),
-                                        buildPopupMenuItem(
-                                            'Delete items',
-                                            2,
-                                            Theme.of(context)
-                                                .popupMenuTheme
-                                                .textStyle!
-                                                .copyWith(fontSize: 10.sp), () {
-                                          setState(() {
-                                            promptDeleteAllItems(
-                                              context,
-                                              () {
-                                                setState(() {
-                                                  SQLHelper().deleteAllItem();
-                                                  Navigator.of(context).pop();
-                                                });
-                                              },
-                                            );
-                                          });
-                                        }),
-                                      ]),
+                              popupMenuBtn(
+                                  context, setState, promptDeleteAllItems),
                             ]),
                         flexibleSpace: FlexibleSpaceBar(
                           background: Padding(
@@ -564,7 +515,8 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
                                     cAniAllNotes,
                                     searchTextController.text.isEmpty
                                         ? notesData
-                                        : searchedNotesData),
+                                        : searchedNotesData,
+                                    isRotated),
                                 SizedBox(
                                   height: 3.h,
                                 ),
@@ -584,8 +536,10 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
                         delegate: SliverChildBuilderDelegate(childCount: 1,
                             (context, index) {
                           return Padding(
-                              padding: EdgeInsets.only(left: 4.w, right: 4.w),
-                              child: ListView.builder(
+                            padding: EdgeInsets.only(left: 4.w, right: 4.w),
+                            child: Column(
+                              children: [
+                                ListView.builder(
                                   shrinkWrap: true,
                                   itemCount: searchTextController.text.isEmpty
                                       ? notesData.length
@@ -756,42 +710,10 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
                                                         SizedBox(
                                                           height: 0.55.h,
                                                         ),
-                                                        if (itemNotes[constants
-                                                                .pin] ==
-                                                            1)
-                                                          Row(
-                                                            children: [
-                                                              Icon(
-                                                                PhosphorIcons
-                                                                    .regular
-                                                                    .pushPin,
-                                                                size: 3.w,
-                                                                color: blue,
-                                                              ),
-                                                              SizedBox(
-                                                                width: 1.5.w,
-                                                              ),
-                                                              Text(
-                                                                date,
-                                                                style: Theme.of(
-                                                                        context)
-                                                                    .textTheme
-                                                                    .displayMedium!
-                                                                    .copyWith(
-                                                                        fontSize:
-                                                                            12.sp),
-                                                              ),
-                                                            ],
-                                                          )
-                                                        else
-                                                          Text(date,
-                                                              style: Theme.of(
-                                                                      context)
-                                                                  .textTheme
-                                                                  .displayMedium!
-                                                                  .copyWith(
-                                                                      fontSize:
-                                                                          12.sp))
+                                                        statusPinnedFavorited(
+                                                            context,
+                                                            itemNotes,
+                                                            date),
                                                       ],
                                                     ),
                                                     AnimatedBuilder(
@@ -867,8 +789,6 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
                                                                 index]!,
                                                           ),
                                                           child: child,
-                                                          // scale: Tween(begin: 1.0, end: 0.95)
-                                                          //     .animate(cAniItemNotes[index]!),
                                                         );
                                                       },
                                                     ),
@@ -880,7 +800,11 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
                                         ),
                                       ),
                                     );
-                                  }));
+                                  },
+                                ),
+                              ],
+                            ),
+                          );
                         }),
                       )
                     ],

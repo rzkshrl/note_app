@@ -35,7 +35,7 @@ Widget buildSelectionTitle(
 }
 
 Widget buildHomeTitle(BuildContext context, void Function()? onTap,
-    AnimationController cAniAllNotes, String text) {
+    AnimationController cAniAllNotes, String text, bool isRotated) {
   return Padding(
     padding: EdgeInsets.only(left: 3.w, top: 7.2.h),
     child: Column(

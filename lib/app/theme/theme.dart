@@ -11,6 +11,7 @@ Color grey = HexColor('#656565');
 Color greyDark = HexColor('#1a1a1a');
 Color greyDark2 = HexColor('#1f2326');
 Color red = HexColor('#c04c4c');
+Color yellow = HexColor('#d2a936');
 
 class NoteAppTheme {
   static ThemeData darkTheme = ThemeData(

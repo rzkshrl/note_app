@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:note_app/app/theme/theme.dart';
 import 'package:note_app/app/utils/button.dart';
 import 'package:note_app/app/utils/constants.dart';
 import 'package:note_app/app/utils/modalsheet.dart';
@@ -14,11 +15,97 @@ Widget showSelectionBottomBar(
     bool isClicked,
     bool allSelectedItems,
     bool isLongPressed,
-    void setState(void Function() fn),
+    void Function(void Function() fn) setState,
     void Function() clear,
     Widget btnLongPressedItemHomeSelectAll) {
   // call string constants
   var constants = Constants();
+
+  String textPin() {
+    String text = 'Pin';
+    for (var item in notesData) {
+      if (selectedNoteIds.contains(item[constants.id])) {
+        if (item[constants.pin] == 0) {
+          text = 'Pin';
+        } else {
+          text = 'Unpin';
+        }
+      }
+    }
+    return text;
+  }
+
+  String textFavorite() {
+    String text = 'Favorite';
+    for (var item in notesData) {
+      if (selectedNoteIds.contains(item[constants.id])) {
+        if (item[constants.favorite] == 0) {
+          text = 'Favorite';
+        } else {
+          text = 'Unfavorite';
+        }
+      }
+    }
+    return text;
+  }
+
+  PhosphorIcon iconPin() {
+    PhosphorIcon icon = PhosphorIcon(
+      PhosphorIcons.regular.pushPin,
+      color: selectedItems.contains(true)
+          ? Theme.of(context).iconTheme.color
+          : Theme.of(context).iconTheme.color!.withOpacity(0.2),
+    );
+    for (var item in notesData) {
+      if (selectedNoteIds.contains(item[constants.id])) {
+        if (item[constants.pin] == 0) {
+          icon = PhosphorIcon(
+            PhosphorIcons.regular.pushPin,
+            color: selectedItems.contains(true)
+                ? Theme.of(context).iconTheme.color
+                : Theme.of(context).iconTheme.color!.withOpacity(0.2),
+          );
+        } else {
+          icon = PhosphorIcon(
+            PhosphorIcons.fill.pushPin,
+            color: selectedItems.contains(true)
+                ? Theme.of(context).floatingActionButtonTheme.backgroundColor
+                : Theme.of(context).iconTheme.color!.withOpacity(0.2),
+          );
+        }
+      }
+    }
+    return icon;
+  }
+
+  PhosphorIcon iconFavorite() {
+    PhosphorIcon icon = PhosphorIcon(
+      PhosphorIcons.regular.star,
+      color: selectedItems.contains(true)
+          ? Theme.of(context).iconTheme.color
+          : Theme.of(context).iconTheme.color!.withOpacity(0.2),
+    );
+    for (var item in notesData) {
+      if (selectedNoteIds.contains(item[constants.id])) {
+        if (item[constants.favorite] == 0) {
+          icon = PhosphorIcon(
+            PhosphorIcons.regular.star,
+            color: selectedItems.contains(true)
+                ? Theme.of(context).iconTheme.color
+                : Theme.of(context).iconTheme.color!.withOpacity(0.2),
+          );
+        } else {
+          icon = PhosphorIcon(
+            PhosphorIcons.fill.star,
+            color: selectedItems.contains(true)
+                ? yellow
+                : Theme.of(context).iconTheme.color!.withOpacity(0.2),
+          );
+        }
+      }
+    }
+    return icon;
+  }
 
   return Container(
     height: 6.h,
@@ -29,13 +116,8 @@ Widget showSelectionBottomBar(
         btnLongPressedItemHome(
           selectedItems,
           context,
-          PhosphorIcon(
-            PhosphorIcons.fill.pushPin,
-            color: selectedItems.contains(true)
-                ? Theme.of(context).iconTheme.color
-                : Theme.of(context).iconTheme.color!.withOpacity(0.2),
-          ),
-          'Pin',
+          iconPin(),
+          textPin(),
           () {
             setState(() {
               isClicked = !isClicked;
@@ -83,13 +165,8 @@ Widget showSelectionBottomBar(
         btnLongPressedItemHome(
           selectedItems,
           context,
-          PhosphorIcon(
-            PhosphorIcons.regular.star,
-            color: selectedItems.contains(true)
-                ? Theme.of(context).iconTheme.color
-                : Theme.of(context).iconTheme.color!.withOpacity(0.2),
-          ),
-          'Favorite',
+          iconFavorite(),
+          textFavorite(),
           () {
             setState(() {
               isClicked = !isClicked;
@@ -100,12 +177,40 @@ Widget showSelectionBottomBar(
               });
             });
             //action
+            setState(() {
+              for (var item in notesData) {
+                if (selectedNoteIds.contains(item[constants.id])) {
+                  if (item[constants.favorite] == 0) {
+                    SQLHelper().favoriteItem(true, selectedNoteIds.toList());
+                  } else {
+                    SQLHelper().favoriteItem(false, selectedNoteIds.toList());
+                  }
+                  debugPrint(
+                      'favorited item nih : ${item[constants.favorite]}');
+                }
+              }
+            });
+            clear();
           },
           (details) {
             setState(() {
               isClicked = !isClicked;
             });
             //action
+            setState(() {
+              for (var item in notesData) {
+                if (selectedNoteIds.contains(item[constants.id])) {
+                  if (item[constants.favorite] == 0) {
+                    SQLHelper().favoriteItem(true, selectedNoteIds.toList());
+                  } else {
+                    SQLHelper().favoriteItem(false, selectedNoteIds.toList());
+                  }
+                  debugPrint(
+                      'favorited item nih : ${item[constants.favorite]}');
+                }
+              }
+            });
+            clear();
           },
         ),
         btnLongPressedItemHome(

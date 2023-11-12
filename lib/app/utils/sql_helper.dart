@@ -74,16 +74,14 @@ class SQLHelper {
       constants.favorite: convertFavorite,
     };
     final update = db.update(constants.tableName, data,
-        where: "id IN (${id.join(', ')})" 'id = ?',
+        where: "id IN (${id.join(', ')})",
         conflictAlgorithm: ConflictAlgorithm.replace);
     return update;
   }
 
   Future<List<Map<String, dynamic>>> getAllItem() async {
     final db = await SQLHelper().db();
-    return db.query(
-      constants.tableName,
-    );
+    return db.query(constants.tableName, orderBy: '${constants.date} DESC');
   }
 
   Future<void> deleteItem(List id) async {

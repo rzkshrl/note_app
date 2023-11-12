@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:note_app/app/utils/sql_helper.dart';
 import 'package:sizer/sizer.dart';
 
 PopupMenuItem buildPopupMenuItem(
@@ -55,4 +57,81 @@ class _CustomPopupMenuDividerState extends State<CustomPopupMenuDivider> {
       ),
     );
   }
+}
+
+Widget popupMenuBtn(BuildContext context,
+    void Function(void Function() fn) setState, promptDeleteAllItems) {
+  return PopupMenuButton<dynamic>(
+      tooltip: '',
+      icon: ClipOval(
+        child: Material(
+          color: Colors.transparent,
+          child: Icon(
+            Icons.more_vert_rounded,
+            color: Theme.of(context).iconTheme.color,
+          ),
+        ),
+      ),
+      offset: Offset(-2.5.w, 5.5.h),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
+      itemBuilder: (context) => [
+            buildPopupMenuItem(
+                'Delete items',
+                2,
+                Theme.of(context)
+                    .popupMenuTheme
+                    .textStyle!
+                    .copyWith(fontSize: 10.sp), () {
+              setState(() {
+                promptDeleteAllItems(
+                  context,
+                  () {
+                    setState(() {
+                      SQLHelper().deleteAllItem();
+                      Navigator.of(context).pop();
+                    });
+                  },
+                );
+              });
+            }),
+          ]);
+}
+
+Widget mainTitleBtn(
+  BuildContext context,
+) {
+  return PopupMenuButton<dynamic>(
+      tooltip: '',
+      icon: const ClipOval(
+        child: Material(
+          color: Colors.transparent,
+          child: FaIcon(
+            FontAwesomeIcons.caretDown,
+            size: 18,
+          ),
+        ),
+      ),
+      offset: Offset(-2.5.w, 5.5.h),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
+      itemBuilder: (context) => [
+            buildPopupMenuItem(
+                'Profile',
+                1,
+                Theme.of(context)
+                    .popupMenuTheme
+                    .textStyle!
+                    .copyWith(fontSize: 10.sp),
+                () {}),
+            CustomPopupMenuDivider(
+              color: Theme.of(context).iconTheme.color!.withOpacity(0.3),
+            ),
+            buildPopupMenuItem(
+                'Delete items',
+                2,
+                Theme.of(context)
+                    .popupMenuTheme
+                    .textStyle!
+                    .copyWith(fontSize: 10.sp),
+                () {}),
+          ]);
 }
