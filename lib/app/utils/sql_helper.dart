@@ -84,6 +84,12 @@ class SQLHelper {
     return db.query(constants.tableName, orderBy: '${constants.date} DESC');
   }
 
+  Future<List<Map<String, dynamic>>> getFavoritedItem() async {
+    final db = await SQLHelper().db();
+    return db.query(constants.tableName,
+        orderBy: '${constants.date} DESC', where: '${constants.favorite} = 1');
+  }
+
   Future<void> deleteItem(List id) async {
     final db = await SQLHelper().db();
     try {

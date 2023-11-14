@@ -92,3 +92,68 @@ Widget buildHomeTitle(BuildContext context, void Function()? onTap,
     ),
   );
 }
+
+Widget buildHomeTitleSingle(
+  BuildContext context,
+  void Function()? onTap,
+  AnimationController cAniAllNotes,
+  String text,
+  bool isRotated,
+  String title,
+) {
+  return Padding(
+    padding: EdgeInsets.only(left: 3.w, top: 7.2.h),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        InkWell(
+          highlightColor: Colors.transparent,
+          splashColor: Colors.transparent,
+          splashFactory: NoSplash.splashFactory,
+          onTap: onTap,
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: Theme.of(context)
+                    .textTheme
+                    .headlineLarge!
+                    .copyWith(fontSize: 24.sp),
+              ),
+              SizedBox(
+                width: 2.5.w,
+              ),
+              Padding(
+                padding: EdgeInsets.only(top: 0.6.h),
+                child: AnimatedBuilder(
+                  animation: cAniAllNotes,
+                  builder: (context, child) {
+                    return Transform.rotate(
+                      angle: cAniAllNotes.value * 1 * pi,
+                      child: child,
+                    );
+                  },
+                  child: const FaIcon(
+                    FontAwesomeIcons.caretDown,
+                    size: 18,
+                  ),
+                ),
+              )
+            ],
+          ),
+        ),
+        SizedBox(
+          height: 1.h,
+        ),
+        Text(
+          text,
+          style: Theme.of(context)
+              .textTheme
+              .displayMedium!
+              .copyWith(fontSize: 12.sp),
+        ),
+      ],
+    ),
+  );
+}

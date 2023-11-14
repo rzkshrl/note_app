@@ -129,15 +129,19 @@ Widget showSelectionBottomBar(
             });
             //action
             setState(() {
-              for (var item in notesData) {
-                if (selectedNoteIds.contains(item[constants.id])) {
-                  if (item[constants.pin] == 0) {
-                    SQLHelper().pinItem(true, selectedNoteIds.toList());
-                  } else {
-                    SQLHelper().pinItem(false, selectedNoteIds.toList());
+              if (selectedItems.contains(true)) {
+                for (var item in notesData) {
+                  if (selectedNoteIds.contains(item[constants.id])) {
+                    if (item[constants.pin] == 0) {
+                      SQLHelper().pinItem(true, selectedNoteIds.toList());
+                    } else {
+                      SQLHelper().pinItem(false, selectedNoteIds.toList());
+                    }
+                    debugPrint('pinned item nih : ${item[constants.pin]}');
                   }
-                  debugPrint('pinned item nih : ${item[constants.pin]}');
                 }
+              } else {
+                return;
               }
             });
             clear();
@@ -148,15 +152,19 @@ Widget showSelectionBottomBar(
             });
             //action
             setState(() {
-              for (var item in notesData) {
-                if (selectedNoteIds.contains(item[constants.id])) {
-                  if (item[constants.pin] == 0) {
-                    SQLHelper().pinItem(true, selectedNoteIds.toList());
-                  } else {
-                    SQLHelper().pinItem(false, selectedNoteIds.toList());
+              if (selectedItems.contains(true)) {
+                for (var item in notesData) {
+                  if (selectedNoteIds.contains(item[constants.id])) {
+                    if (item[constants.pin] == 0) {
+                      SQLHelper().pinItem(true, selectedNoteIds.toList());
+                    } else {
+                      SQLHelper().pinItem(false, selectedNoteIds.toList());
+                    }
+                    debugPrint('pinned item nih : ${item[constants.pin]}');
                   }
-                  debugPrint('pinned item nih : ${item[constants.pin]}');
                 }
+              } else {
+                return;
               }
             });
             clear();
@@ -178,16 +186,20 @@ Widget showSelectionBottomBar(
             });
             //action
             setState(() {
-              for (var item in notesData) {
-                if (selectedNoteIds.contains(item[constants.id])) {
-                  if (item[constants.favorite] == 0) {
-                    SQLHelper().favoriteItem(true, selectedNoteIds.toList());
-                  } else {
-                    SQLHelper().favoriteItem(false, selectedNoteIds.toList());
+              if (selectedItems.contains(true)) {
+                for (var item in notesData) {
+                  if (selectedNoteIds.contains(item[constants.id])) {
+                    if (item[constants.favorite] == 0) {
+                      SQLHelper().favoriteItem(true, selectedNoteIds.toList());
+                    } else {
+                      SQLHelper().favoriteItem(false, selectedNoteIds.toList());
+                    }
+                    debugPrint(
+                        'favorited item nih : ${item[constants.favorite]}');
                   }
-                  debugPrint(
-                      'favorited item nih : ${item[constants.favorite]}');
                 }
+              } else {
+                return;
               }
             });
             clear();
@@ -198,16 +210,20 @@ Widget showSelectionBottomBar(
             });
             //action
             setState(() {
-              for (var item in notesData) {
-                if (selectedNoteIds.contains(item[constants.id])) {
-                  if (item[constants.favorite] == 0) {
-                    SQLHelper().favoriteItem(true, selectedNoteIds.toList());
-                  } else {
-                    SQLHelper().favoriteItem(false, selectedNoteIds.toList());
+              if (selectedItems.contains(true)) {
+                for (var item in notesData) {
+                  if (selectedNoteIds.contains(item[constants.id])) {
+                    if (item[constants.favorite] == 0) {
+                      SQLHelper().favoriteItem(true, selectedNoteIds.toList());
+                    } else {
+                      SQLHelper().favoriteItem(false, selectedNoteIds.toList());
+                    }
+                    debugPrint(
+                        'favorited item nih : ${item[constants.favorite]}');
                   }
-                  debugPrint(
-                      'favorited item nih : ${item[constants.favorite]}');
                 }
+              } else {
+                return;
               }
             });
             clear();
@@ -233,22 +249,30 @@ Widget showSelectionBottomBar(
               });
             });
             //action
-            promptDeleteItems(context, () {
-              SQLHelper().deleteItem(selectedNoteIds.toList());
-              clear();
-              Navigator.pop(context);
-            });
+            if (selectedItems.contains(true)) {
+              promptDeleteItems(context, () {
+                SQLHelper().deleteItem(selectedNoteIds.toList());
+                clear();
+                Navigator.pop(context);
+              });
+            } else {
+              return;
+            }
           },
           (details) {
             setState(() {
               isClicked = !isClicked;
             });
             //action
-            promptDeleteItems(context, () {
-              SQLHelper().deleteItem(selectedNoteIds.toList());
-              clear();
-              Navigator.pop(context);
-            });
+            if (selectedItems.contains(true)) {
+              promptDeleteItems(context, () {
+                SQLHelper().deleteItem(selectedNoteIds.toList());
+                clear();
+                Navigator.pop(context);
+              });
+            } else {
+              return;
+            }
           },
         ),
         btnLongPressedItemHomeSelectAll,

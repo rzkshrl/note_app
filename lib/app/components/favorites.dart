@@ -26,14 +26,14 @@ import '../utils/icons.dart';
 import '../utils/modalsheet.dart';
 import '../utils/popupmenu.dart';
 
-class Home extends StatefulWidget {
-  const Home({super.key});
+class Favorites extends StatefulWidget {
+  const Favorites({super.key});
 
   @override
-  State<Home> createState() => _HomeState();
+  State<Favorites> createState() => _FavoritesState();
 }
 
-class _HomeState extends State<Home> with TickerProviderStateMixin {
+class _FavoritesState extends State<Favorites> with TickerProviderStateMixin {
   // animation controller for All Notes btn
   late AnimationController cAniAllNotes;
   bool isRotated = false;
@@ -64,7 +64,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
 
   // initiate notesData from database
   List<Map<String, dynamic>> notesData = [];
-  List<Map<String, dynamic>> notesDataFavorited = [];
+  List<Map<String, dynamic>> notesDataAll = [];
   List<Map<String, dynamic>> searchedNotesData = [];
 
   // init id and item status into set and list
@@ -151,7 +151,6 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
     setState(() {
       cAniAllNotes.forward();
       String? currentRoute = ModalRoute.of(context)?.settings.name;
-
       showDialog(
         context: context,
         barrierColor: Theme.of(context).popupMenuTheme.color!.withOpacity(0.5),
@@ -161,7 +160,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
             context,
             currentRoute!,
             notesData,
-            notesDataFavorited,
+            notesDataAll,
           );
         },
         barrierDismissible: true,
@@ -204,16 +203,17 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
         scrollController.offset > (220 - kToolbarHeight);
   }
 
-  // read all data from database/to show on Home
+  // read all data from database/to show on Favorites
   Future<List<Map<String, dynamic>>> readDataAll() async {
     try {
-      List<Map> notesList = await SQLHelper().getAllItem();
+      List<Map> notesList = await SQLHelper().getFavoritedItem();
       List<Map<String, dynamic>> notesData =
           List<Map<String, dynamic>>.from(notesList);
-      List<Map> notesListFavorited = await SQLHelper().getFavoritedItem();
-      notesDataFavorited = List<Map<String, dynamic>>.from(notesListFavorited);
+      List<Map> notesListAll = await SQLHelper().getFavoritedItem();
+      notesDataAll = List<Map<String, dynamic>>.from(notesListAll);
 
       notesData.sort((a, b) => (b[constants.pin]).compareTo(a[constants.pin]));
+
       return notesData;
     } catch (e) {
       debugPrint('$e');
@@ -416,7 +416,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
                   onVerticalDragEnd: (details) {
                     resetAnimationOnScroll();
                   },
-                  child: buildAllNotes(),
+                  child: buildFavorites(),
                 );
               })),
     );
@@ -429,368 +429,6 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
     cAniFAB.dispose();
     cAniFAB2.dispose();
     super.dispose();
-  }
-
-  Widget buildAllNotes() {
-    return CustomScrollView(
-      physics: const BouncingScrollPhysics(),
-      controller: scrollController,
-      slivers: [
-        SliverAppBar(
-          automaticallyImplyLeading: false,
-          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-          surfaceTintColor: Theme.of(context).scaffoldBackgroundColor,
-          pinned: true,
-          snap: false,
-          floating: false,
-          expandedHeight: 25.h,
-          centerTitle: false,
-          title:
-              Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-            if (isSliverAppBarExpanded)
-              if (isLongPressed)
-                Row(
-                  children: [
-                    IconButton(
-                      onPressed: () {
-                        clear();
-                      },
-                      icon: PhosphorIcon(PhosphorIcons.regular.x),
-                    ),
-                    Padding(
-                      padding: EdgeInsets.only(left: 1.w),
-                      child: Text(
-                        "${getSelectedItemCount()} selected",
-                        style: Theme.of(context)
-                            .textTheme
-                            .headlineLarge!
-                            .copyWith(fontSize: titleFontSize),
-                      ),
-                    ),
-                  ],
-                )
-              else
-                InkWell(
-                  highlightColor: Colors.transparent,
-                  splashColor: Colors.transparent,
-                  splashFactory: NoSplash.splashFactory,
-                  onTap: () {
-                    handleButtonClick();
-                  },
-                  child: Padding(
-                    padding: EdgeInsets.only(left: 4.w),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          "All Notes",
-                          style: Theme.of(context)
-                              .textTheme
-                              .headlineLarge!
-                              .copyWith(fontSize: titleFontSize),
-                        ),
-                        SizedBox(
-                          width: 2.5.w,
-                        ),
-                        Padding(
-                          padding: EdgeInsets.only(top: 0.1.h),
-                          child: AnimatedBuilder(
-                            animation: cAniAllNotes,
-                            builder: (context, child) {
-                              return Transform.rotate(
-                                angle: cAniAllNotes.value * 1 * pi,
-                                child: child,
-                              );
-                            },
-                            child: const FaIcon(
-                              FontAwesomeIcons.caretDown,
-                              size: 14,
-                            ),
-                          ),
-                        )
-                      ],
-                    ),
-                  ),
-                )
-            else
-              const SizedBox(),
-            popupMenuBtn(context, setState, promptDeleteAllItems),
-          ]),
-          flexibleSpace: FlexibleSpaceBar(
-            background: Padding(
-              padding: EdgeInsets.only(top: 5.h, left: 4.w, right: 4.w),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  toggleTitleHomeAllNotes(
-                    isLongPressed,
-                    context,
-                    () {
-                      setState(() {
-                        isLongPressed = false;
-                        selectedItems.clear();
-                        selectedNoteIds.clear();
-                        allSelectedItems = false;
-                      });
-                    },
-                    getSelectedItemCount(),
-                    () {
-                      handleButtonClick();
-                    },
-                    cAniAllNotes,
-                    searchTextController.text.isEmpty
-                        ? notesData
-                        : searchedNotesData,
-                    isRotated,
-                  ),
-                  SizedBox(
-                    height: 3.h,
-                  ),
-                  searchBox(
-                      isLongPressed, isSearch, context, searchTextController,
-                      (text) {
-                    searchToList(text);
-                  }),
-                  SizedBox(
-                    height: 2.h,
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-        SliverList(
-          delegate: SliverChildBuilderDelegate(childCount: 1, (context, index) {
-            return Padding(
-              padding: EdgeInsets.only(left: 4.w, right: 4.w),
-              child: Column(
-                children: [
-                  ListView.builder(
-                    shrinkWrap: true,
-                    itemCount: searchTextController.text.isEmpty
-                        ? notesData.length
-                        : searchedNotesData.length,
-                    physics: const BouncingScrollPhysics(),
-                    padding: EdgeInsets.only(bottom: 0.1.h),
-                    itemBuilder: (context, index) {
-                      var itemNotes = searchTextController.text.isEmpty
-                          ? notesData[index]
-                          : searchedNotesData[index];
-                      final date =
-                          extractDatefromTimeStamp(itemNotes[constants.date]);
-                      // initiate state for animationController with index and the status bool
-                      if (cAniItemNotes[index] == null) {
-                        cAniItemNotes[index] = AnimationController(
-                          vsync: this,
-                          duration: const Duration(milliseconds: 100),
-                        );
-                        isItemClicked[index] = false;
-                      }
-                      // set default value : false for selectedItems
-                      if (selectedItems.length <= index) {
-                        selectedItems.add(false);
-                      }
-
-                      return AnimatedBuilder(
-                        animation: cAniItemNotes[index]!,
-                        builder: (
-                          context,
-                          child,
-                        ) {
-                          return ScaleTransition(
-                            scale: Tween(begin: 1.0, end: 0.95)
-                                .animate(cAniItemNotes[index]!),
-                            child: child,
-                          );
-                        },
-                        child: Padding(
-                          padding: EdgeInsets.only(bottom: 1.155.h),
-                          child: GestureDetector(
-                            onLongPressDown: (details) {
-                              cAniItemNotes[index]!.forward();
-                            },
-                            onLongPressStart: (details) {
-                              selectedItems[index] = !selectedItems[index];
-                            },
-                            onLongPressEnd: (details) async {
-                              await cAniItemNotes[index]!.reverse();
-                              setState(() {
-                                isLongPressed = true;
-                                if (selectedItems[index] == true) {
-                                  selectedNoteIds.add(itemNotes[constants.id]);
-                                }
-
-                                debugPrint(
-                                    'ini selectedNoteIds : $selectedNoteIds');
-                                // isItemDeletedClicked = !isItemDeletedClicked;
-                                // cAniItemDeleteNotes.forward;
-                              });
-                            },
-                            child: InkWell(
-                              highlightColor: Colors.transparent,
-                              splashColor: Colors.transparent,
-                              splashFactory: NoSplash.splashFactory,
-                              onTap: () async {
-                                if (isLongPressed == true) {
-                                  selectedItems[index] = !selectedItems[index];
-                                  setState(() {
-                                    if (selectedItems[index] == true) {
-                                      selectedNoteIds
-                                          .add(itemNotes[constants.id]);
-                                    } else {
-                                      selectedNoteIds.removeWhere(
-                                          (e) => e == itemNotes[constants.id]);
-                                    }
-                                    debugPrint(
-                                        'ini selectedNoteIds : $selectedNoteIds');
-                                    debugPrint(
-                                        'ini selectedItems : $selectedItems');
-                                    Future.delayed(
-                                        const Duration(milliseconds: 20), () {
-                                      cAniItemNotes[index]!.reverse();
-                                    });
-                                  });
-                                } else {
-                                  cAniItemNotes[index]!.forward();
-                                  Future.delayed(
-                                      const Duration(milliseconds: 70), () {
-                                    cAniItemNotes[index]!.reverse();
-                                  });
-
-                                  await Future.delayed(
-                                          const Duration(milliseconds: 101))
-                                      .then((value) => Navigator.of(context)
-                                              .pushReplacementNamed(
-                                                  textEditorUpdateViewRoute,
-                                                  arguments: [
-                                                itemNotes[constants.id],
-                                                itemNotes[constants.title],
-                                                itemNotes[constants.text],
-                                                itemNotes[constants.date]
-                                              ]));
-                                }
-                              },
-                              child: Container(
-                                height: 9.h,
-                                decoration: BoxDecoration(
-                                  color: Theme.of(context).canvasColor,
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                                child: Padding(
-                                  padding:
-                                      EdgeInsets.only(left: 4.w, right: 4.w),
-                                  child: Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Column(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            '${itemNotes[constants.title]}',
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .headlineSmall!
-                                                .copyWith(fontSize: 12.sp),
-                                          ),
-                                          SizedBox(
-                                            height: 0.55.h,
-                                          ),
-                                          statusPinnedFavorited(
-                                              context, itemNotes, date),
-                                        ],
-                                      ),
-                                      AnimatedBuilder(
-                                        animation: cAniItemNotes[index]!,
-                                        child: isLongPressed
-                                            ? AnimatedBuilder(
-                                                animation:
-                                                    cAniItemNotes[index]!,
-                                                builder: (
-                                                  context,
-                                                  child,
-                                                ) {
-                                                  return SlideTransition(
-                                                    position: Tween<Offset>(
-                                                      begin: Offset.zero,
-                                                      end: const Offset(
-                                                          -0.05, 0.0),
-                                                    ).animate(
-                                                      cAniItemNotes[index]!,
-                                                    ),
-                                                    child: child,
-                                                  );
-                                                },
-                                                child: Checkbox(
-                                                    value: selectedItems[index],
-                                                    onChanged: (value) {
-                                                      setState(() {
-                                                        selectedItems[index] =
-                                                            value!;
-                                                        if (value == true) {
-                                                          selectedNoteIds.add(
-                                                              itemNotes[
-                                                                  constants
-                                                                      .id]);
-                                                        } else {
-                                                          selectedNoteIds
-                                                              .removeWhere((e) =>
-                                                                  e ==
-                                                                  itemNotes[
-                                                                      constants
-                                                                          .id]);
-                                                        }
-                                                        debugPrint(
-                                                            'ini selectedNoteIds : $selectedNoteIds');
-                                                        debugPrint(
-                                                            'ini selectedItems : $selectedItems');
-                                                        cAniItemNotes[index]!
-                                                            .forward()
-                                                            .then((value) => Future.delayed(
-                                                                    const Duration(
-                                                                        milliseconds:
-                                                                            60))
-                                                                .then((value) =>
-                                                                    cAniItemNotes[
-                                                                            index]!
-                                                                        .reverse()));
-                                                      });
-                                                    }),
-                                              )
-                                            : const SizedBox(),
-                                        builder: (
-                                          context,
-                                          child,
-                                        ) {
-                                          return ScaleTransition(
-                                            scale: Tween(begin: 1.0, end: 0.5)
-                                                .animate(
-                                              cAniItemNotes[index]!,
-                                            ),
-                                            child: child,
-                                          );
-                                        },
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ],
-              ),
-            );
-          }),
-        )
-      ],
-    );
   }
 
   Widget buildFavorites() {
@@ -1021,16 +659,15 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
 
                                   await Future.delayed(
                                           const Duration(milliseconds: 101))
-                                      .then((value) {
-                                    Navigator.of(context).pushReplacementNamed(
-                                        textEditorUpdateViewRoute,
-                                        arguments: [
-                                          itemNotes[constants.id],
-                                          itemNotes[constants.title],
-                                          itemNotes[constants.text],
-                                          itemNotes[constants.date]
-                                        ]);
-                                  });
+                                      .then((value) => Navigator.of(context)
+                                              .pushReplacementNamed(
+                                                  textEditorUpdateViewRoute,
+                                                  arguments: [
+                                                itemNotes[constants.id],
+                                                itemNotes[constants.title],
+                                                itemNotes[constants.text],
+                                                itemNotes[constants.date]
+                                              ]));
                                 }
                               },
                               child: Container(
