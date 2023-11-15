@@ -37,8 +37,9 @@ Widget showFAB(
 
                     Future.delayed(const Duration(milliseconds: 101))
                         .then((value) {
-                      Navigator.of(context)
-                          .pushReplacementNamed(textEditorNewViewRoute);
+                      Navigator.of(context).pushReplacementNamed(
+                          textEditorNewViewRoute,
+                          arguments: [ModalRoute.of(context)?.settings.name]);
                     });
                   },
                   onLongPressDown: (details) {

@@ -297,8 +297,12 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
     return WillPopScope(
       onWillPop: onWillPop,
       child: Scaffold(
-          floatingActionButton:
-              isLongPressed ? Container() : showFAB(cAniFAB2, cAniFAB),
+          floatingActionButton: isLongPressed
+              ? Container()
+              : showFAB(
+                  cAniFAB2,
+                  cAniFAB,
+                ),
           bottomNavigationBar: isLongPressed
               ? showSelectionBottomBar(
                   context,
@@ -666,7 +670,10 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
                                                 itemNotes[constants.id],
                                                 itemNotes[constants.title],
                                                 itemNotes[constants.text],
-                                                itemNotes[constants.date]
+                                                itemNotes[constants.date],
+                                                ModalRoute.of(context)
+                                                    ?.settings
+                                                    .name
                                               ]));
                                 }
                               },
@@ -1028,7 +1035,8 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
                                           itemNotes[constants.id],
                                           itemNotes[constants.title],
                                           itemNotes[constants.text],
-                                          itemNotes[constants.date]
+                                          itemNotes[constants.date],
+                                          ModalRoute.of(context)?.settings.name,
                                         ]);
                                   });
                                 }

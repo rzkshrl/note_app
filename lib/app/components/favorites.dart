@@ -159,8 +159,8 @@ class _FavoritesState extends State<Favorites> with TickerProviderStateMixin {
             isSliverAppBarExpanded,
             context,
             currentRoute!,
-            notesData,
             notesDataAll,
+            notesData,
           );
         },
         barrierDismissible: true,
@@ -209,7 +209,7 @@ class _FavoritesState extends State<Favorites> with TickerProviderStateMixin {
       List<Map> notesList = await SQLHelper().getFavoritedItem();
       List<Map<String, dynamic>> notesData =
           List<Map<String, dynamic>>.from(notesList);
-      List<Map> notesListAll = await SQLHelper().getFavoritedItem();
+      List<Map> notesListAll = await SQLHelper().getAllItem();
       notesDataAll = List<Map<String, dynamic>>.from(notesListAll);
 
       notesData.sort((a, b) => (b[constants.pin]).compareTo(a[constants.pin]));
@@ -297,8 +297,12 @@ class _FavoritesState extends State<Favorites> with TickerProviderStateMixin {
     return WillPopScope(
       onWillPop: onWillPop,
       child: Scaffold(
-          floatingActionButton:
-              isLongPressed ? Container() : showFAB(cAniFAB2, cAniFAB),
+          floatingActionButton: isLongPressed
+              ? Container()
+              : showFAB(
+                  cAniFAB2,
+                  cAniFAB,
+                ),
           bottomNavigationBar: isLongPressed
               ? showSelectionBottomBar(
                   context,
@@ -666,7 +670,10 @@ class _FavoritesState extends State<Favorites> with TickerProviderStateMixin {
                                                 itemNotes[constants.id],
                                                 itemNotes[constants.title],
                                                 itemNotes[constants.text],
-                                                itemNotes[constants.date]
+                                                itemNotes[constants.date],
+                                                ModalRoute.of(context)
+                                                    ?.settings
+                                                    .name,
                                               ]));
                                 }
                               },

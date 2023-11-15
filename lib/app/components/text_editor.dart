@@ -80,6 +80,7 @@ class _TextEditorState extends State<TextEditor> {
     textTextController.addListener(handleNoteTextChange);
     changes;
     debugPrint('TEST ARGUMENTASI DIMENSI : ${widget.args[0]}');
+    debugPrint('TEST ARGUMENTASI ROUTING : ${widget.args[1]}');
   }
 
   @override
@@ -99,7 +100,11 @@ class _TextEditorState extends State<TextEditor> {
       // go back/dismiss page without saving
       if (noteText.isEmpty) {
         if (widget.args[0] == 'new') {
-          Navigator.of(context).pushReplacementNamed(homeViewRoute);
+          if (widget.args[1][0] == homeViewRoute) {
+            Navigator.of(context).pushReplacementNamed(homeViewRoute);
+          } else if (widget.args[1][0] == favoritesViewRoute) {
+            Navigator.of(context).pushReplacementNamed(favoritesViewRoute);
+          }
         }
       } else {
         String title = noteText.split('\n')[0];
@@ -113,7 +118,11 @@ class _TextEditorState extends State<TextEditor> {
           try {
             await SQLHelper()
                 .createItem(noteTitle, noteText, dateTimeNow, 0, 0);
-            Navigator.of(context).pushReplacementNamed(homeViewRoute);
+            if (widget.args[1][0] == homeViewRoute) {
+              Navigator.of(context).pushReplacementNamed(homeViewRoute);
+            } else if (widget.args[1][0] == favoritesViewRoute) {
+              Navigator.of(context).pushReplacementNamed(favoritesViewRoute);
+            }
           } catch (e) {
             SnackBarService.showSnackBar(
               content: const Text("Can't save note."),
@@ -129,12 +138,20 @@ class _TextEditorState extends State<TextEditor> {
             widget.args[1][2] != textTextController.text)) {
       await Future.delayed(const Duration(milliseconds: 50));
       promptSaveUpdatedItems(context, () {
-        Navigator.of(context).pushReplacementNamed(homeViewRoute);
+        if (widget.args[1][4] == homeViewRoute) {
+          Navigator.of(context).pushReplacementNamed(homeViewRoute);
+        } else if (widget.args[1][4] == favoritesViewRoute) {
+          Navigator.of(context).pushReplacementNamed(favoritesViewRoute);
+        }
       }, () {
         try {
           SQLHelper()
               .updateItem(noteTitle, noteText, widget.args[1][0], dateTimeNow);
-          Navigator.of(context).pushReplacementNamed(homeViewRoute);
+          if (widget.args[1][4] == homeViewRoute) {
+            Navigator.of(context).pushReplacementNamed(homeViewRoute);
+          } else if (widget.args[1][4] == favoritesViewRoute) {
+            Navigator.of(context).pushReplacementNamed(favoritesViewRoute);
+          }
         } catch (e) {
           SnackBarService.showSnackBar(
             content: const Text("Can't save note."),
@@ -143,7 +160,19 @@ class _TextEditorState extends State<TextEditor> {
         }
       });
     } else {
-      Navigator.of(context).pushReplacementNamed(homeViewRoute);
+      if (widget.args[0] == 'new') {
+        if (widget.args[1][0] == homeViewRoute) {
+          Navigator.of(context).pushReplacementNamed(homeViewRoute);
+        } else if (widget.args[1][0] == favoritesViewRoute) {
+          Navigator.of(context).pushReplacementNamed(favoritesViewRoute);
+        }
+      } else if (widget.args[0] == 'update') {
+        if (widget.args[1][4] == homeViewRoute) {
+          Navigator.of(context).pushReplacementNamed(homeViewRoute);
+        } else if (widget.args[1][4] == favoritesViewRoute) {
+          Navigator.of(context).pushReplacementNamed(favoritesViewRoute);
+        }
+      }
     }
   }
 
@@ -153,7 +182,11 @@ class _TextEditorState extends State<TextEditor> {
     if (noteTitle.isEmpty) {
       // go back/dismiss page without saving
       if (noteText.isEmpty) {
-        Navigator.of(context).pushReplacementNamed(homeViewRoute);
+        if (widget.args[1][0] == homeViewRoute) {
+          Navigator.of(context).pushReplacementNamed(homeViewRoute);
+        } else if (widget.args[1][0] == favoritesViewRoute) {
+          Navigator.of(context).pushReplacementNamed(favoritesViewRoute);
+        }
       } else {
         String title = noteText.split('\n')[0];
         if (title.length > 16) {
@@ -326,8 +359,13 @@ class _TextEditorState extends State<TextEditor> {
                         onPressed: () {
                           saveNotes();
 
-                          Navigator.of(context)
-                              .pushReplacementNamed(homeViewRoute);
+                          if (widget.args[1][4] == homeViewRoute) {
+                            Navigator.of(context)
+                                .pushReplacementNamed(homeViewRoute);
+                          } else if (widget.args[1][4] == favoritesViewRoute) {
+                            Navigator.of(context)
+                                .pushReplacementNamed(favoritesViewRoute);
+                          }
                         },
                         icon: const FaIcon(FontAwesomeIcons.check),
                       ),
