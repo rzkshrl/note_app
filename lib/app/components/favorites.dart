@@ -3,6 +3,7 @@
 import 'dart:math';
 import 'dart:developer' as dev;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
@@ -272,6 +273,32 @@ class _FavoritesState extends State<Favorites> with TickerProviderStateMixin {
     return '${count.toString()} item';
   }
 
+  // logic to select all item
+  void selectAllItem() {
+    allSelectedItems = !allSelectedItems;
+    // logic to select all item
+    if (allSelectedItems) {
+      for (var item in notesData) {
+        selectedNoteIds.add(item[constants.id]);
+      }
+      selectedItems =
+          List<bool>.generate(selectedNoteIds.length, (index) => false);
+      for (var i = 0; i < selectedItems.length; i++) {
+        selectedItems[i] = true;
+      }
+    } else if (!allSelectedItems) {
+      for (var item in notesData) {
+        selectedNoteIds.remove(item[constants.id]);
+      }
+      selectedItems =
+          List<bool>.generate(selectedNoteIds.length, (index) => false);
+      for (var i = 0; i < selectedItems.length; i++) {
+        selectedItems[i] = false;
+        allSelectedItems = false;
+      }
+    }
+  }
+
   // clear list and revert bool
   void clear() {
     setState(() {
@@ -297,132 +324,86 @@ class _FavoritesState extends State<Favorites> with TickerProviderStateMixin {
     return WillPopScope(
       onWillPop: onWillPop,
       child: Scaffold(
-          floatingActionButton: isLongPressed
-              ? Container()
-              : showFAB(
-                  cAniFAB2,
-                  cAniFAB,
-                ),
-          bottomNavigationBar: isLongPressed
-              ? showSelectionBottomBar(
-                  context,
-                  selectedItems,
-                  selectedNoteIds,
-                  notesData,
-                  isClicked,
+        floatingActionButton: isLongPressed
+            ? Container()
+            : showFAB(
+                cAniFAB2,
+                cAniFAB,
+              ),
+        bottomNavigationBar: isLongPressed
+            ? showSelectionBottomBar(
+                context,
+                selectedItems,
+                selectedNoteIds,
+                notesData,
+                isClicked,
+                allSelectedItems,
+                isLongPressed,
+                setState,
+                clear,
+                btnLongPressedItemHomeSelectAll(
                   allSelectedItems,
-                  isLongPressed,
-                  setState,
-                  clear,
-                  btnLongPressedItemHomeSelectAll(
-                    allSelectedItems,
-                    context,
-                    PhosphorIcon(
-                      !allSelectedItems
-                          ? PhosphorIcons.regular.checkSquare
-                          : PhosphorIcons.fill.checkSquare,
-                      color: !allSelectedItems
-                          ? Theme.of(context).iconTheme.color
-                          : Theme.of(context)
-                              .floatingActionButtonTheme
-                              .backgroundColor,
-                    ),
-                    () {
-                      setState(() {
-                        isClicked = !isClicked;
-                      });
-                      Future.delayed(const Duration(milliseconds: 100), () {
-                        setState(() {
-                          isClicked = false;
-                        });
-                      });
-                      //action
-                      allSelectedItems = !allSelectedItems;
-                      if (allSelectedItems) {
-                        for (var item in notesData) {
-                          selectedNoteIds.add(item[constants.id]);
-                        }
-                        selectedItems = List<bool>.generate(
-                            selectedNoteIds.length, (index) => false);
-                        for (var i = 0; i < selectedItems.length; i++) {
-                          selectedItems[i] = true;
-                        }
-                        debugPrint('select all');
-                        debugPrint('selectedNoteIds : $selectedNoteIds');
-                      } else if (!allSelectedItems) {
-                        for (var item in notesData) {
-                          selectedNoteIds.remove(item[constants.id]);
-                        }
-                        selectedItems = List<bool>.generate(
-                            selectedNoteIds.length, (index) => false);
-                        for (var i = 0; i < selectedItems.length; i++) {
-                          selectedItems[i] = false;
-                          allSelectedItems = false;
-                          debugPrint('deselect all');
-                          debugPrint('selectedNoteIds : $selectedNoteIds');
-                        }
-                      }
-                    },
-                    (details) {
-                      setState(() {
-                        isClicked = !isClicked;
-                      });
-                      //action
-                      allSelectedItems = !allSelectedItems;
-                      if (allSelectedItems) {
-                        for (var item in notesData) {
-                          selectedNoteIds.add(item[constants.id]);
-                        }
-                        selectedItems = List<bool>.generate(
-                            selectedNoteIds.length, (index) => false);
-                        for (var i = 0; i < selectedItems.length; i++) {
-                          selectedItems[i] = true;
-                        }
-                        debugPrint('select all');
-                        debugPrint('selectedNoteIds : $selectedNoteIds');
-                      } else if (!allSelectedItems) {
-                        for (var item in notesData) {
-                          selectedNoteIds.remove(item[constants.id]);
-                        }
-                        selectedItems = List<bool>.generate(
-                            selectedNoteIds.length, (index) => false);
-                        for (var i = 0; i < selectedItems.length; i++) {
-                          selectedItems[i] = false;
-                          allSelectedItems = false;
-                          debugPrint('deselect all');
-                          debugPrint('selectedNoteIds : $selectedNoteIds');
-                        }
-                      }
-                    },
+                  context,
+                  PhosphorIcon(
+                    !allSelectedItems
+                        ? PhosphorIcons.regular.checkSquare
+                        : PhosphorIcons.fill.checkSquare,
+                    color: !allSelectedItems
+                        ? Theme.of(context).iconTheme.color
+                        : Theme.of(context)
+                            .floatingActionButtonTheme
+                            .backgroundColor,
                   ),
-                )
-              : null,
-          body: FutureBuilder<List<Map<String, dynamic>>>(
-              future: readDataAll(),
-              builder: (context, snapshot) {
-                if (!snapshot.hasData) {
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      SizedBox(
-                        height: 48.h,
-                      ),
-                      const Center(child: Text(''))
-                    ],
-                  );
-                }
-                notesData = snapshot.data!;
-                return GestureDetector(
-                  onVerticalDragDown: (details) {
-                    resetAnimationOnScroll();
+                  () {
+                    setState(() {
+                      isClicked = !isClicked;
+                    });
+                    Future.delayed(const Duration(milliseconds: 100), () {
+                      setState(() {
+                        isClicked = false;
+                      });
+                    });
+                    //action
+                    selectAllItem();
                   },
-                  onVerticalDragEnd: (details) {
-                    resetAnimationOnScroll();
+                  (details) {
+                    setState(() {
+                      isClicked = !isClicked;
+                    });
+                    //action
+                    selectAllItem();
                   },
-                  child: buildFavorites(),
-                );
-              })),
+                ),
+              )
+            : null,
+        body: FutureBuilder<List<Map<String, dynamic>>>(
+          future: readDataAll(),
+          builder: (context, snapshot) {
+            if (!snapshot.hasData) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SizedBox(
+                    height: 48.h,
+                  ),
+                  const Center(child: Text(''))
+                ],
+              );
+            }
+            notesData = snapshot.data!;
+            return GestureDetector(
+              onVerticalDragDown: (details) {
+                resetAnimationOnScroll();
+              },
+              onVerticalDragEnd: (details) {
+                resetAnimationOnScroll();
+              },
+              child: buildFavorites(),
+            );
+          },
+        ),
+      ),
     );
   }
 
@@ -530,12 +511,7 @@ class _FavoritesState extends State<Favorites> with TickerProviderStateMixin {
                     isLongPressed,
                     context,
                     () {
-                      setState(() {
-                        isLongPressed = false;
-                        selectedItems.clear();
-                        selectedNoteIds.clear();
-                        allSelectedItems = false;
-                      });
+                      clear();
                     },
                     getSelectedItemCount(),
                     () {
@@ -577,11 +553,13 @@ class _FavoritesState extends State<Favorites> with TickerProviderStateMixin {
                     physics: const BouncingScrollPhysics(),
                     padding: EdgeInsets.only(bottom: 0.1.h),
                     itemBuilder: (context, index) {
+                      // initiate itemNotes for item on listview with logic
                       var itemNotes = searchTextController.text.isEmpty
                           ? notesData[index]
                           : searchedNotesData[index];
                       final date =
                           extractDatefromTimeStamp(itemNotes[constants.date]);
+
                       // initiate state for animationController with index and the status bool
                       if (cAniItemNotes[index] == null) {
                         cAniItemNotes[index] = AnimationController(
@@ -590,6 +568,7 @@ class _FavoritesState extends State<Favorites> with TickerProviderStateMixin {
                         );
                         isItemClicked[index] = false;
                       }
+
                       // set default value : false for selectedItems
                       if (selectedItems.length <= index) {
                         selectedItems.add(false);
@@ -623,11 +602,10 @@ class _FavoritesState extends State<Favorites> with TickerProviderStateMixin {
                                 if (selectedItems[index] == true) {
                                   selectedNoteIds.add(itemNotes[constants.id]);
                                 }
-
-                                debugPrint(
-                                    'ini selectedNoteIds : $selectedNoteIds');
-                                // isItemDeletedClicked = !isItemDeletedClicked;
-                                // cAniItemDeleteNotes.forward;
+                                if (kDebugMode) {
+                                  debugPrint(
+                                      'ini selectedNoteIds : $selectedNoteIds');
+                                }
                               });
                             },
                             child: InkWell(
@@ -645,10 +623,7 @@ class _FavoritesState extends State<Favorites> with TickerProviderStateMixin {
                                       selectedNoteIds.removeWhere(
                                           (e) => e == itemNotes[constants.id]);
                                     }
-                                    debugPrint(
-                                        'ini selectedNoteIds : $selectedNoteIds');
-                                    debugPrint(
-                                        'ini selectedItems : $selectedItems');
+
                                     Future.delayed(
                                         const Duration(milliseconds: 20), () {
                                       cAniItemNotes[index]!.reverse();
@@ -667,13 +642,13 @@ class _FavoritesState extends State<Favorites> with TickerProviderStateMixin {
                                               .pushReplacementNamed(
                                                   textEditorUpdateViewRoute,
                                                   arguments: [
+                                                ModalRoute.of(context)
+                                                    ?.settings
+                                                    .name,
                                                 itemNotes[constants.id],
                                                 itemNotes[constants.title],
                                                 itemNotes[constants.text],
                                                 itemNotes[constants.date],
-                                                ModalRoute.of(context)
-                                                    ?.settings
-                                                    .name,
                                               ]));
                                 }
                               },
@@ -750,10 +725,7 @@ class _FavoritesState extends State<Favorites> with TickerProviderStateMixin {
                                                                       constants
                                                                           .id]);
                                                         }
-                                                        debugPrint(
-                                                            'ini selectedNoteIds : $selectedNoteIds');
-                                                        debugPrint(
-                                                            'ini selectedItems : $selectedItems');
+
                                                         cAniItemNotes[index]!
                                                             .forward()
                                                             .then((value) => Future.delayed(

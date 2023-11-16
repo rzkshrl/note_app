@@ -2,6 +2,7 @@
 
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:intl/intl.dart';
@@ -46,14 +47,7 @@ class _TextEditorState extends State<TextEditor> {
 
   List<String> noteTextChanges = [];
 
-  void handleChanges() {
-    if (widget.args[0] == 'new') {
-      noteTextChanges = List.from(textTextController.text.split(' '));
-    } else {
-      noteTextChanges = List.from(widget.args[1][2].split(' '));
-    }
-  }
-
+  // trim string/remove whitespaces
   void handleTitleTextChange() {
     setState(() {
       noteTitle = titleTextController.text.trim();
@@ -69,18 +63,21 @@ class _TextEditorState extends State<TextEditor> {
   @override
   void initState() {
     super.initState();
-    noteTitle = (widget.args[0] == 'new' ? '' : widget.args[1][1]);
-    noteText = (widget.args[0] == 'new' ? '' : widget.args[1][2]);
-
+    // get data from argument routing into variables
+    noteTitle = (widget.args[0] == 'new' ? '' : widget.args[1][2]);
+    noteText = (widget.args[0] == 'new' ? '' : widget.args[1][3]);
     titleTextController.text =
-        (widget.args[0] == 'new' ? '' : widget.args[1][1]);
-    textTextController.text =
         (widget.args[0] == 'new' ? '' : widget.args[1][2]);
+    textTextController.text =
+        (widget.args[0] == 'new' ? '' : widget.args[1][3]);
+
     titleTextController.addListener(handleTitleTextChange);
     textTextController.addListener(handleNoteTextChange);
     changes;
-    debugPrint('TEST ARGUMENTASI DIMENSI : ${widget.args[0]}');
-    debugPrint('TEST ARGUMENTASI ROUTING : ${widget.args[1]}');
+    if (kDebugMode) {
+      debugPrint('TEST ARGUMENTASI DIMENSI : ${widget.args[0]}');
+      debugPrint('TEST ARGUMENTASI ROUTING : ${widget.args[1]}');
+    }
   }
 
   @override
@@ -94,17 +91,23 @@ class _TextEditorState extends State<TextEditor> {
     return FocusScope.of(context);
   }
 
+  // handle routing back
+  void routingLogic() {
+    if (widget.args[1][0] == homeViewRoute) {
+      Navigator.of(context).pushReplacementNamed(homeViewRoute);
+    } else if (widget.args[1][0] == favoritesViewRoute) {
+      Navigator.of(context).pushReplacementNamed(favoritesViewRoute);
+    }
+  }
+
+  // handle back button/onwillpop to saving notes
   Future<void> handleBack() async {
     final dateTimeNow = DateTime.now().toIso8601String();
     if (noteTitle.isEmpty) {
       // go back/dismiss page without saving
       if (noteText.isEmpty) {
         if (widget.args[0] == 'new') {
-          if (widget.args[1][0] == homeViewRoute) {
-            Navigator.of(context).pushReplacementNamed(homeViewRoute);
-          } else if (widget.args[1][0] == favoritesViewRoute) {
-            Navigator.of(context).pushReplacementNamed(favoritesViewRoute);
-          }
+          routingLogic();
         }
       } else {
         String title = noteText.split('\n')[0];
@@ -118,61 +121,41 @@ class _TextEditorState extends State<TextEditor> {
           try {
             await SQLHelper()
                 .createItem(noteTitle, noteText, dateTimeNow, 0, 0);
-            if (widget.args[1][0] == homeViewRoute) {
-              Navigator.of(context).pushReplacementNamed(homeViewRoute);
-            } else if (widget.args[1][0] == favoritesViewRoute) {
-              Navigator.of(context).pushReplacementNamed(favoritesViewRoute);
-            }
+            routingLogic();
           } catch (e) {
             SnackBarService.showSnackBar(
               content: const Text("Can't save note."),
             );
-            debugPrint('$e');
+            if (kDebugMode) {
+              debugPrint('$e');
+            }
           }
         }
       }
     }
 
     if (widget.args[0] == 'update' &&
-        (widget.args[1][1] != titleTextController.text ||
-            widget.args[1][2] != textTextController.text)) {
+        (widget.args[1][2] != titleTextController.text ||
+            widget.args[1][3] != textTextController.text)) {
       await Future.delayed(const Duration(milliseconds: 50));
       promptSaveUpdatedItems(context, () {
-        if (widget.args[1][4] == homeViewRoute) {
-          Navigator.of(context).pushReplacementNamed(homeViewRoute);
-        } else if (widget.args[1][4] == favoritesViewRoute) {
-          Navigator.of(context).pushReplacementNamed(favoritesViewRoute);
-        }
+        routingLogic();
       }, () {
         try {
           SQLHelper()
-              .updateItem(noteTitle, noteText, widget.args[1][0], dateTimeNow);
-          if (widget.args[1][4] == homeViewRoute) {
-            Navigator.of(context).pushReplacementNamed(homeViewRoute);
-          } else if (widget.args[1][4] == favoritesViewRoute) {
-            Navigator.of(context).pushReplacementNamed(favoritesViewRoute);
-          }
+              .updateItem(noteTitle, noteText, widget.args[1][1], dateTimeNow);
+          routingLogic();
         } catch (e) {
           SnackBarService.showSnackBar(
             content: const Text("Can't save note."),
           );
-          debugPrint('$e');
+          if (kDebugMode) {
+            debugPrint('$e');
+          }
         }
       });
     } else {
-      if (widget.args[0] == 'new') {
-        if (widget.args[1][0] == homeViewRoute) {
-          Navigator.of(context).pushReplacementNamed(homeViewRoute);
-        } else if (widget.args[1][0] == favoritesViewRoute) {
-          Navigator.of(context).pushReplacementNamed(favoritesViewRoute);
-        }
-      } else if (widget.args[0] == 'update') {
-        if (widget.args[1][4] == homeViewRoute) {
-          Navigator.of(context).pushReplacementNamed(homeViewRoute);
-        } else if (widget.args[1][4] == favoritesViewRoute) {
-          Navigator.of(context).pushReplacementNamed(favoritesViewRoute);
-        }
-      }
+      routingLogic();
     }
   }
 
@@ -182,11 +165,7 @@ class _TextEditorState extends State<TextEditor> {
     if (noteTitle.isEmpty) {
       // go back/dismiss page without saving
       if (noteText.isEmpty) {
-        if (widget.args[1][0] == homeViewRoute) {
-          Navigator.of(context).pushReplacementNamed(homeViewRoute);
-        } else if (widget.args[1][0] == favoritesViewRoute) {
-          Navigator.of(context).pushReplacementNamed(favoritesViewRoute);
-        }
+        routingLogic();
       } else {
         String title = noteText.split('\n')[0];
         if (title.length > 16) {
@@ -199,6 +178,7 @@ class _TextEditorState extends State<TextEditor> {
           try {
             await SQLHelper()
                 .createItem(noteTitle, noteText, dateTimeNow, 0, 0);
+            routingLogic();
           } catch (e) {
             SnackBarService.showSnackBar(
               content: const Text("Can't save note."),
@@ -211,7 +191,8 @@ class _TextEditorState extends State<TextEditor> {
     if (widget.args[0] == 'update') {
       try {
         SQLHelper()
-            .updateItem(noteTitle, noteText, widget.args[1][0], dateTimeNow);
+            .updateItem(noteTitle, noteText, widget.args[1][1], dateTimeNow);
+        routingLogic();
       } catch (e) {
         SnackBarService.showSnackBar(
           content: const Text("Can't save note."),
@@ -221,6 +202,7 @@ class _TextEditorState extends State<TextEditor> {
     }
   }
 
+  // convert date into desired String
   String extractDatefromTimeStamp() {
     if (widget.args[0] == 'new') {
       final currentDate = DateTime.now();
@@ -235,7 +217,7 @@ class _TextEditorState extends State<TextEditor> {
       }
     } else {
       final currentDate = DateTime.now();
-      final date = DateTime.parse(widget.args[1][3]);
+      final date = DateTime.parse(widget.args[1][4]);
       final formattedDate = DateFormat('MMM dd').format(date);
 
       if (currentDate.year == date.year &&
@@ -248,6 +230,7 @@ class _TextEditorState extends State<TextEditor> {
     }
   }
 
+  // convert time on DateTime into desired String
   String extractTimefromTimeStamp() {
     if (widget.args[0] == 'new') {
       final currentDate = DateTime.now();
@@ -255,7 +238,7 @@ class _TextEditorState extends State<TextEditor> {
 
       return formattedDate;
     } else {
-      final date = DateTime.parse(widget.args[1][3]);
+      final date = DateTime.parse(widget.args[1][4]);
       final formattedDate = DateFormat('hh:mm a').format(date);
       return formattedDate;
     }
@@ -269,9 +252,6 @@ class _TextEditorState extends State<TextEditor> {
 
   @override
   Widget build(BuildContext context) {
-    // nanti bikin ini bisa sesuai languange hp yaa, jadi datetime format sesuai
-
-    // NavigationService service = NavigationService();
     return WillPopScope(
       onWillPop: onWillPop,
       child: Scaffold(
@@ -345,7 +325,7 @@ class _TextEditorState extends State<TextEditor> {
                               isUndoEnabled = true;
                             }
                           } else {
-                            if (textTextController.text == widget.args[1][2]) {
+                            if (textTextController.text == widget.args[1][3]) {
                               return;
                             } else {
                               isUndoEnabled = true;
@@ -358,14 +338,6 @@ class _TextEditorState extends State<TextEditor> {
                       IconButton(
                         onPressed: () {
                           saveNotes();
-
-                          if (widget.args[1][4] == homeViewRoute) {
-                            Navigator.of(context)
-                                .pushReplacementNamed(homeViewRoute);
-                          } else if (widget.args[1][4] == favoritesViewRoute) {
-                            Navigator.of(context)
-                                .pushReplacementNamed(favoritesViewRoute);
-                          }
                         },
                         icon: const FaIcon(FontAwesomeIcons.check),
                       ),
@@ -465,8 +437,6 @@ class _TextEditorState extends State<TextEditor> {
                                 isRedoEnabled = true;
                               }
 
-                              handleChanges();
-
                               changes.addGroup([
                                 Change(
                                   textTextController.text,
@@ -483,27 +453,12 @@ class _TextEditorState extends State<TextEditor> {
                                         textTextController.text = '';
                                         isUndoEnabled = false;
                                       }
-                                      debugPrint(
-                                          'oldValue.length - 1 : ${oldValue.length - 1}');
-                                      debugPrint('oldValue : $oldValue');
-                                      debugPrint(
-                                          'noteTextChanges : ${noteTextChanges.first}');
-                                      debugPrint(
-                                          'noteTextChanges.first.length : ${noteTextChanges.first.length}');
                                     } else {
                                       textTextController.text = oldValue;
                                       if (oldValue.length ==
                                           textTextController.text.length) {
                                         isUndoEnabled = true;
                                       }
-                                      debugPrint(
-                                          'oldValue.length : ${oldValue.length}');
-                                      debugPrint('oldValue : $oldValue');
-                                      debugPrint(
-                                          'textTextController : ${textTextController.text}');
-
-                                      debugPrint(
-                                          'textTextController.length : ${textTextController.text.length}');
                                     }
                                   },
                                 ),
