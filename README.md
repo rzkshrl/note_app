@@ -1,4 +1,4 @@
-SimpleCalculator
+Note App
 
 This is a learning project and to cloning my Huawei phone Note App. Notes app with dynamic theme, little animation, pinned item, favorited item, search bar. Also i've learned how to not implemented any third parrty state management here, looking backward i alway using Getx in my previous project.
 
